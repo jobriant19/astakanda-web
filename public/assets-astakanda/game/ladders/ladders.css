@@ -1,0 +1,251 @@
+/* ASTA KANDA — Snakes & Ladders. Memakai variabel & kelas dari style.css, game.css, apple.css. */
+
+/* Pastikan .hidden selalu menang atas display bawaan kelas di bawah */
+#game-ladders-detail.hidden, #game-ladders-setup.hidden,
+.ladders-play.hidden, .ladders-modal.hidden { display: none !important; }
+
+/* ---------- Atur Permainan ---------- */
+#game-ladders-setup .game-setup-inner { gap: 12px; }
+#game-ladders-setup .game-setup-img { width: 46px; height: 46px; }
+#game-ladders-setup .game-setup-label { margin-bottom: 8px; }
+#ladders-mode-chips .game-chip,
+#ladders-kategori-chips .game-chip { padding: 8px 4px; font-size: 11.5px; white-space: nowrap; }
+#ladders-mode-chips .game-chip.is-active,
+#ladders-kategori-chips .game-chip.is-active { background: var(--tab-game); }
+
+.ladders-names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.ladders-names.is-single { grid-template-columns: 1fr; }
+.ladders-name {
+  display: flex; align-items: center; gap: 8px; min-width: 0; height: 40px; padding: 0 12px;
+  border-radius: 12px; background: var(--surface);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+}
+.ladders-name-dot { flex: 0 0 auto; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.ladders-name input {
+  flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--ink-900);
+}
+.ladders-name.is-ai span:last-child { font-size: 13px; font-weight: 700; color: var(--ink-700); }
+@media (max-height: 760px) {
+  #game-ladders-setup .game-setup-inner { gap: 8px; }
+  #game-ladders-setup .game-setup-img { width: 38px; height: 38px; }
+  .ladders-name { height: 36px; }
+}
+
+/* ---------- Layar bermain (overlay layar penuh) ---------- */
+.ladders-play {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; flex-direction: column;
+  background: var(--surface); overflow: hidden;
+}
+.ladders-play .game-play-topbar { flex: 0 0 auto; }
+.ladders-play .game-play-grid { flex: 1; min-height: 0; height: auto; }
+#ladders-canvas { display: block; width: 100%; height: 100%; border: 0; border-radius: 14px; }
+
+.ladders-players { flex-wrap: nowrap; }
+.ladders-player {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-radius: 12px; background: var(--surface);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+  transition: box-shadow .15s ease;
+}
+.ladders-player.is-active { box-shadow: 0 0 0 3px var(--pc), 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
+.ladders-player-dot { flex: 0 0 auto; width: 16px; height: 16px; border-radius: 50%; background: var(--pc); box-shadow: 0 0 0 2px #fff; }
+.ladders-player-info { min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.ladders-player-info b { font-size: 12.5px; font-weight: 800; color: var(--ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ladders-player-info small { font-size: 11px; font-weight: 600; color: var(--ink-500); }
+
+/* Kartu giliran + dadu */
+.ladders-turn .game-play-question-body { gap: 8px; }
+.ladders-turn-name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: var(--ink-900); }
+.ladders-turn-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0, 0, 0, .08); }
+.ladders-turn .game-play-question-target { font-size: clamp(28px, 4.6vh, 44px); padding: 12px 32px; }
+.ladders-detect { font-size: 12px; font-weight: 700; color: var(--ink-500); }
+.ladders-detect b { color: var(--ink-900); }
+.ladders-dice-row { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+.ladders-dice-info { font-size: 12.5px; font-weight: 700; color: var(--ink-700); text-align: left; max-width: 190px; line-height: 1.35; }
+.ladders-btn-lewati { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 18px; font-weight: 700; font-size: 12.5px; }
+.ladders-btn-lewati svg { width: 15px; height: 15px; }
+.ladders-btn-lewati:disabled { opacity: .45; cursor: not-allowed; }
+
+.ladders-dice {
+  flex: 0 0 auto; width: 62px; height: 62px; padding: 9px;
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px;
+  border-radius: 14px; background: #fff;
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+}
+.ladders-dice i { place-self: center; width: 70%; aspect-ratio: 1; border-radius: 50%; background: transparent; }
+.ladders-dice i.on { background: #1e293b; }
+.ladders-dice.is-rolling { animation: laddersDiceShake .22s linear infinite; }
+@keyframes laddersDiceShake {
+  0%   { transform: rotate(0) translateY(0); }
+  25%  { transform: rotate(-10deg) translateY(-3px); }
+  50%  { transform: rotate(8deg) translateY(0); }
+  75%  { transform: rotate(-6deg) translateY(-2px); }
+  100% { transform: rotate(0) translateY(0); }
+}
+
+/* ---------- Popup pemenang ---------- */
+.ladders-modal {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(15, 23, 42, .35); backdrop-filter: blur(6px);
+}
+.ladders-result-ico {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, #fde68a, #fbbf24); color: #78350f;
+  box-shadow: 0 6px 14px rgba(245, 158, 11, .35);
+}
+.ladders-result-ico svg { width: 30px; height: 30px; }
+.ladders-rank { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.ladders-rank-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 12px;
+  background: var(--surface); text-align: left;
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+  font-size: 13.5px; font-weight: 700; color: var(--ink-900);
+}
+.ladders-rank-no { width: 20px; font-weight: 800; color: var(--ink-500); }
+.ladders-rank-dot { flex: 0 0 auto; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.ladders-rank-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ladders-rank-pos { margin-left: auto; font-size: 12.5px; color: var(--ink-500); }
+
+/* ---------- Dadu 3D di tengah papan ---------- */
+.ladders-dice3d {
+  position: absolute; z-index: 4; pointer-events: none;
+  opacity: 0; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center;
+  transition: opacity .35s ease; --s: 84px;
+}
+.ladders-dice3d.show { opacity: 1; }
+.ladders-dice3d-stage { perspective: 800px; width: var(--s); height: var(--s); }
+.ladders-cube { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.ladders-face {
+  position: absolute; inset: 0; box-sizing: border-box;
+  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  padding: calc(var(--s) * .15);
+  border-radius: calc(var(--s) * .05);            /* sudut hampir lancip -> kubus terlihat utuh */
+  background: linear-gradient(145deg, #ffffff, #e2e8f2);
+  border: 2px solid #b6c2d4;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8), inset 0 0 calc(var(--s) * .16) rgba(15, 23, 42, .22);
+  backface-visibility: visible;                   /* sisi belakang ikut tergambar: tidak ada celah di sudut */
+}
+.ladders-face i { place-self: center; width: 72%; aspect-ratio: 1; border-radius: 50%; }
+.ladders-face i.on { background: radial-gradient(circle at 35% 30%, #475569, #0f172a); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .4); }
+.ladders-face i.on.red { background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c); }
+.ladders-face.f1 { transform: translateZ(calc(var(--s) / 2)); }
+.ladders-face.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.ladders-face.f3 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.ladders-face.f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.ladders-face.f2 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.ladders-face.f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.ladders-dice3d-shadow {
+  width: calc(var(--s) * 1.1); height: calc(var(--s) * .22); margin-top: calc(var(--s) * .12);
+  border-radius: 50%; opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, .55), rgba(15, 23, 42, 0) 70%);
+}
+.ladders-dice3d-value {
+  margin-top: 10px; padding: 5px 16px; border-radius: 999px; white-space: nowrap;
+  background: rgba(15, 23, 42, .82); color: #fff; font-size: 14px; font-weight: 800;
+  opacity: 0; transform: translateY(6px) scale(.9);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.ladders-dice3d-value.show { opacity: 1; transform: none; }
+
+/* ---------- Keterangan pemain di pojok kiri bawah kamera ---------- */
+.ladders-cam-badge {
+  position: absolute; left: 20px; bottom: 20px; z-index: 6;
+  display: inline-flex; align-items: center; gap: 10px;
+  max-width: calc(100% - 40px); padding: 6px 16px 6px 6px; border-radius: 999px;
+  background: rgba(15, 23, 42, .86); color: #fff;
+  border: 2px solid var(--pc, #3b82f6);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .28), 0 0 0 3px rgba(255, 255, 255, .08);
+  backdrop-filter: blur(3px);
+  transition: border-color .25s ease;
+}
+.ladders-cam-ico {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--pc, #3b82f6);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, .25), 0 0 0 2px rgba(255, 255, 255, .85);
+  transition: background-color .25s ease;
+}
+.ladders-cam-ico svg { width: 17px; height: 17px; color: #fff; }
+.ladders-cam-txt { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.ladders-cam-txt small { font-size: 9.5px; letter-spacing: 1.2px; font-weight: 700; color: rgba(255, 255, 255, .7); }
+.ladders-cam-txt b { font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Ikon pada kartu/layar disembunyikan sampai selesai dipotong (tanpa loncatan ukuran) */
+.ladders-img:not(.is-ready) { visibility: hidden; }
+
+/* ---------- Banner informasi giliran (menggantikan dadu kecil) ---------- */
+.ladders-hint {
+  --h1: #60a5fa; --h2: #2563eb; --hs: rgba(37, 99, 235, .3);
+  display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box;
+  padding: 10px 14px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--h1), var(--h2));
+  box-shadow: 0 6px 14px var(--hs);
+  color: #fff; font-size: 13px; font-weight: 800; line-height: 1.3; text-align: left;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+.ladders-hint-ico {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, .24);
+}
+.ladders-hint-ico svg { width: 17px; height: 17px; }
+.ladders-hint-txt { min-width: 0; }
+.ladders-hint.is-gesture .ladders-hint-ico { animation: laddersHintPulse 1.4s ease-in-out infinite; }
+.ladders-hint.is-roll .ladders-hint-ico svg { animation: laddersHintSpin 1s linear infinite; }
+.ladders-hint.is-ai   { --h1: #a78bfa; --h2: #7c3aed; --hs: rgba(124, 58, 237, .3); }
+.ladders-hint.is-roll { --h1: #fb923c; --h2: #ea580c; --hs: rgba(234, 88, 12, .3); }
+.ladders-hint.is-skip { --h1: #94a3b8; --h2: #64748b; --hs: rgba(100, 116, 139, .3); }
+.ladders-hint.is-up   { --h1: #4ade80; --h2: #16a34a; --hs: rgba(22, 163, 74, .3); }
+.ladders-hint.is-down { --h1: #fb7185; --h2: #dc2626; --hs: rgba(220, 38, 38, .3); }
+.ladders-hint.is-info { --h1: #2dd4bf; --h2: #0d9488; --hs: rgba(13, 148, 136, .3); }
+@keyframes laddersHintPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@keyframes laddersHintSpin { to { transform: rotate(360deg); } }
+
+/* ======================================================================
+   TAMBAHAN: pop up Game Over, leaderboard kemenangan
+   ====================================================================== */
+.ladders-lb.hidden { display: none !important; }
+.ladders-lb {
+  position: fixed; inset: 0; z-index: 80; box-sizing: border-box; padding: 16px;
+  display: flex; background: var(--surface); overflow: auto;
+}
+.ladders-lb > .game-screen { flex: 1; min-height: 0; width: 100%; }
+/* variabel warna leaderboard (sama seperti #game-dino-leaderboard di dino.css) */
+#game-ladders-leaderboard {
+  --ink: var(--ink-900); --ink-soft: #6B7280; --ink-faint: #9AA2AE;
+  --shadow-dark-soft: rgba(163,171,185,.4); --shadow-light-soft: rgba(255,255,255,.75);
+  --wood: #2EC4B6; --wood-dark: #21A193;
+  --gold: #F5B942; --gold-dark: #C98F1F; --silver: #B9C1CC; --silver-dark: #8C97A5; --bronze: #D98E4A; --bronze-dark: #A9662A;
+}
+
+/* Pop up Game Over */
+.ladders-result-card { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.ladders-result-ico { width: 64px; height: 64px; }
+.ladders-result-ico svg { width: 34px; height: 34px; }
+.ladders-result-sub { font-size: 14px !important; font-weight: 700; color: var(--ink-500); }
+.ladders-rank-item.is-winner {
+  background: linear-gradient(135deg, #fef3c7, #fde68a); color: #78350f;
+  box-shadow: 0 6px 14px rgba(245, 158, 11, .28);
+}
+.ladders-rank-item.is-winner .ladders-rank-pos { color: #92400e; }
+.ladders-rank-no { width: 26px; text-align: center; font-size: 17px; }
+.ladders-result-card .game-over-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+.ladders-result-card .game-over-row .game-over-btn { flex: 1 1 0; min-width: 118px; }
+.ladders-result-card .game-over-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.ladders-result-card .game-over-btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.ladders-result-card .ladders-btn-keluar-red {
+  background: linear-gradient(145deg, #fb7185, #f43f5e) !important;
+  box-shadow: 0 8px 16px rgba(244, 63, 94, .32) !important; color: #fff !important;
+}
+@media (max-height: 700px) {
+  .ladders-result-card { gap: 8px !important; }
+  .ladders-result-ico { width: 46px; height: 46px; }
+  .ladders-result-ico svg { width: 25px; height: 25px; }
+  .ladders-rank { gap: 6px; }
+  .ladders-rank-item { padding: 6px 12px; }
+}

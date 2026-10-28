@@ -1,0 +1,178 @@
+/* =====================================================================
+   ASTA KANDA — dinoresponsive.css
+   Letakkan di: public/assets-astakanda/game/dino/dinoresponsive.css
+   Muat SETELAH dino.css (dan setelah apple.css, appleresponsive.css,
+   gameresponsive.css) di index.blade.php.
+   Hanya mengatur layar BERMAIN Dino Attack (#game-dino-play) di tablet &
+   HP (<= 1024px). Desktop (> 1024px) tidak diubah.
+
+   Susunan dari atas ke bawah, semuanya dalam 1 layar tanpa scroll:
+     1. Header (logo + tagline, lalu tombol Atur / Leaderboard / Keluar)
+     2. Kamera (atas) lalu Info Deteksi (bawah), lebar & tinggi sama,
+        tingginya mengisi semua sisa layar
+     3. Arena permainan (rasio 3:2 supaya gambar dino tidak gepeng)
+     4. Skor | Rekor | Nyawa
+   ===================================================================== */
+
+@media (max-width: 1024px) {
+
+  /* ---------- Panel Game: tanpa padding & tanpa scroll saat sedang bermain ---------- */
+  #panel-game:has(#game-dino-play:not(.hidden)) {
+    padding: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ---------- Layar bermain: kolom penuh, isi menempel ke atas ---------- */
+  .app-shell .main-grid > #panel-game > #game-dino-play {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    justify-content: flex-start;
+    align-items: stretch;
+    --box-h: 88px;   /* tinggi MINIMAL kamera & kotak soal (aslinya mengisi sisa layar) */
+  }
+
+  /* ---------- 1. Header ---------- */
+  #game-dino-play .game-play-topbar {
+    flex: 0 0 auto;
+    padding: 10px 12px 0;
+    gap: 8px 10px;
+  }
+  #game-dino-play .game-play-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 10px;
+  }
+  #game-dino-play .game-play-brand .logo { height: clamp(30px, 5.5dvh, 44px); }
+  #game-dino-play .game-play-brand .tagline {
+    min-width: 0;
+    padding: 5px clamp(10px, 3vw, 22px);
+    font-size: clamp(9px, 2.4vw, 15px);
+    letter-spacing: .1em;
+    gap: .6em;
+  }
+  #game-dino-play .game-play-actions { flex: 0 0 auto; gap: 8px; }
+  #game-dino-play .game-play-icon-btn { padding: 8px; }
+  #game-dino-play .game-play-icon-btn--wide { padding: 8px 14px; font-size: 12.5px; justify-content: center; }
+
+  /* ---------- Grid isi: 1 kolom, baris 1 = kamera+deteksi, baris 2 = arena+skor ---------- */
+  #game-dino-play .game-play-grid {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    height: auto;
+    max-width: 760px;               /* di tablet tetap proporsional, tidak melebar */
+    margin: 0 auto;
+    padding: 10px 12px 12px;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;   /* baris 1 (kamera+soal) mengisi sisa, baris 2 (arena+skor) di paling bawah */
+  }
+
+  /* ---------- 2. Kamera (atas) & Info Deteksi (bawah): lebar & tinggi sama ---------- */
+  #game-dino-play .game-play-side {
+    order: -1;                      /* tampil di atas arena */
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+  }
+  #game-dino-play .game-play-camera-slot,
+  #game-dino-play .game-play-question {
+    flex: 1 1 0;                    /* kamera & soal berbagi sisa tinggi secara sama rata */
+    width: 100%;
+    min-width: 0;
+    min-height: var(--box-h);
+    height: auto;
+  }
+  #game-dino-play .game-play-camera-slot { aspect-ratio: auto; }
+
+  #game-dino-play .game-play-question { gap: 4px; padding: 10px 12px 6px; }
+  #game-dino-play .game-play-question-headrow { gap: 8px; align-items: center; margin-bottom: 0; }
+  #game-dino-play .game-play-question-label {
+    flex: 0 0 auto;
+    font-size: clamp(10px, 2.8vw, 12px);
+    line-height: 1.2;
+    letter-spacing: .3px;
+  }
+  #game-dino-play #dino-detect-state {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 60%;
+    font-size: clamp(9.5px, 2.6vw, 11.5px);
+    padding: 2px 8px;
+  }
+  /* isi soal berjajar mendatar (kotak huruf | Peragakan | feedback) agar muat di kotak yang pendek */
+  #game-dino-play .game-play-question-body {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  #game-dino-play #dino-detect-label {
+    font-size: clamp(18px, 3.4dvh, 30px);
+    padding: 4px clamp(16px, 5vw, 28px);
+    min-width: 0;
+    border-radius: 12px;
+  }
+  #game-dino-play .dino-target-line { font-size: clamp(11px, 3vw, 13px); white-space: nowrap; }
+  #game-dino-play .game-play-question-feedback { font-size: 11.5px; min-height: 0; }
+
+  /* ---------- 3. Arena (rasio 3:2) + 4. Skor / Rekor / Nyawa ----------
+     Lebar arena & kartu skor sama (--arena-w): selalu penuh, tetapi dibatasi
+     agar tingginya tidak melebihi sisa layar. Rasio 3:2 cocok dengan kanvas
+     Dino (dino.js memakai lebar logis min. 560 untuk tinggi 360). */
+  #game-dino-play .game-play-field {
+    --arena-w: min(100%, max(140px, calc((100dvh - 200px - 2 * var(--box-h)) * 1.5)));
+    gap: 8px;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+  }
+  #game-dino-play .game-play-canvas-wrap {
+    flex: 0 0 auto;
+    width: var(--arena-w);
+    aspect-ratio: 3 / 2;
+    min-height: 0;
+  }
+  #game-dino-play .game-play-stats { width: var(--arena-w); gap: 8px; }
+  #game-dino-play .game-play-stats .stat-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+  }
+  #game-dino-play .game-play-stats .stat-label {
+    max-width: 100%;
+    font-size: clamp(9px, 2.5vw, 12px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #game-dino-play .game-play-stats .stat-value { font-size: clamp(15px, 4.2vw, 22px); line-height: 1.1; }
+  #game-dino-play #dino-nyawa {
+    font-size: clamp(12px, 3.6vw, 18px);
+    letter-spacing: 1px;
+    white-space: nowrap;           /* nyawa selalu 1 baris (tidak turun ke bawah) */
+  }
+}
+
+
+/* ---------- HP (<= 640px): header 2 baris, rapi & rata tengah ---------- */
+@media (max-width: 640px) {
+  #game-dino-play .game-play-topbar { padding: 8px 10px 0; }
+  #game-dino-play .game-play-brand { flex-basis: 100%; justify-content: center; }
+  #game-dino-play .game-play-actions { flex-basis: 100%; }
+  #game-dino-play .game-play-icon-btn--wide { flex: 1 1 0; }   /* Leaderboard & Keluar sama lebar */
+  #game-dino-play .game-play-grid { padding: 8px 10px 10px; gap: 8px; }
+}
+
+/* shortcut: HP landscape sangat pendek (tinggi < 420px) hanya mengecil, tidak ganti susunan; upgrade bila perlu layout 2 kolom khusus landscape */
+@media (max-width: 1024px) and (max-height: 420px) {
+  .app-shell .main-grid > #panel-game > #game-dino-play { --box-h: 76px; }
+}

@@ -1,0 +1,295 @@
+/* =====================================================================
+   ASTA KANDA — ujianresponsive.css
+   Letakkan di: public/assets-astakanda/ujian/ujianresponsive.css
+   Muat SETELAH css/responsive.css di index.blade.php (file ini menimpanya).
+   Hanya mengatur tab "Ujian" (#panel-ujian). Tab lain tidak disentuh.
+
+   Isi:
+     1. Desktop (> 1024px): kolom kanan, isi dipadatkan bila layar pendek
+     2. Tablet & layar pendek (<= 1024px / tinggi <= 540px): tinggi mengikuti isi
+     3. HP (<= 640px): kamera di atas, Info Deteksi di bawahnya, panel Ujian
+        mengisi sisa layar, tanpa scroll
+     4. HP pendek & sangat kecil
+   ===================================================================== */
+
+
+/* ---------- Semua ukuran: tinggi baris Waktu/Soal/Preview tetap sama ----------
+   Supaya memilih "Custom" tidak menambah tinggi dan tombol Mulai tidak terdorong keluar. */
+.ujian-col { min-width: 0; }
+.ujian-config-row { min-height: 58px; }
+.ujian-field input { min-width: 0; }
+
+
+/* ---------- 1. DESKTOP (> 1024px): padatkan sesuai tinggi layar ---------- */
+@media (min-width: 1025px) and (max-height: 860px) {
+  .ujian-col { padding: 14px 16px 12px; gap: 10px; }
+  .ujian-screen { gap: 10px; }
+  .ujian-howto { padding: 9px 14px; }
+  .ujian-howto-list { gap: 5px; }
+  .diff-chip { padding: 7px 6px; }
+  .ujian-btn-mulai { padding: 10px; }
+  .ujian-question-target { font-size: clamp(36px, 9vh, 72px); }
+}
+@media (min-width: 1025px) and (max-height: 720px) {
+  .ujian-start-sub,
+  .ujian-howto-title { display: none; }
+  .ujian-start-ico { width: 38px; height: 38px; }
+  .stat-card { padding: 6px 4px; }
+  .ujian-result-emoji { font-size: 30px; }
+  .ujian-result-score { padding: 8px 24px; font-size: 28px; }
+}
+@media (min-width: 1025px) and (max-height: 620px) {
+  /* shortcut: "Cara Mengerjakan" disembunyikan di layar < 620px tinggi, upgrade bila kolom kanan dibuat scroll */
+  .ujian-howto { display: none; }
+}
+
+
+/* ---------- 2. TABLET & LAYAR PENDEK (<= 1024px atau tinggi <= 540px) ----------
+   Halaman sudah 1 kolom (lihat responsive.css), jadi panel cukup mengikuti tinggi isinya. */
+@media (max-width: 1024px), (max-height: 540px) {
+  .app-shell .main-grid > #panel-ujian {
+    height: auto;
+    padding: 16px;
+  }
+  .app-shell .main-grid > #panel-ujian > .ujian-screen {
+    flex: none;
+    min-height: 0;          /* menimpa min-height: 70vh dari responsive.css */
+    overflow: visible;
+  }
+  .ujian-question { flex: none; min-height: clamp(120px, 22vh, 220px); }
+  .ujian-btn-mulai { margin-top: 4px; }
+}
+
+
+/* ---------- 3. HP (<= 640px): SEMUA TAMPIL DALAM 1 LAYAR, TANPA SCROLL ----------
+   Urutan: logo+tagline / tab / KAMERA / INFO DETEKSI / panel Ujian (sisa tinggi). */
+@media (max-width: 640px) {
+
+  /* --- Kamera di atas, Info Deteksi di bawah (hanya saat tab Ujian aktif) ---
+     Keduanya selebar tab bar; tinggi diatur terpisah (--ujian-cam-h / --ujian-info-h).
+     :has() didukung Chrome 105+, Safari 15.4+, Firefox 121+. */
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col {
+    --ujian-cam-h: clamp(140px, 26dvh, 230px);     /* tinggi kamera: lebih tinggi = jangkauan lebih luas */
+    --ujian-info-h: clamp(116px, 20dvh, 176px);    /* tinggi Info Deteksi */
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    gap: 6px;
+  }
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col .camera-panel,
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col .info-panel {
+    flex: none;
+    width: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+  }
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col .camera-panel { height: var(--ujian-cam-h); }
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col .info-panel   { height: var(--ujian-info-h); }
+  .app-shell:has(#panel-ujian:not(.hidden)) .left-col .info-panel {
+    padding: 7px 10px 8px;
+    gap: 4px;
+  }
+  .app-shell:has(#panel-ujian:not(.hidden)) .info-panel .info-label { display: block; }  /* lebar cukup, label tetap tampil */
+  .app-shell:has(#panel-ujian:not(.hidden)) .info-panel .info-body { padding: 4px 8px; }
+  .app-shell:has(#panel-ujian:not(.hidden)) .info-panel .info-result.is-xl,
+  .app-shell:has(#panel-ujian:not(.hidden)) .info-panel .info-result.is-lg {
+    font-size: clamp(26px, 5dvh, 42px);
+    line-height: 1;
+  }
+  .app-shell:has(#panel-ujian:not(.hidden)) .info-panel .info-meter-top {
+    display: flex;
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+
+  /* --- Panel Ujian: baris 4, selebar layar --- */
+  .app-shell .main-grid > #panel-ujian {
+    grid-column: 1 / -1 !important;     /* menimpa style="grid-column:2" di panel.blade.php */
+    grid-row: 4 !important;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 10px 12px 12px;
+    gap: 8px;
+  }
+  .app-shell .main-grid > #panel-ujian > .ujian-screen {
+    min-height: 0;
+    overflow: hidden;       /* menimpa overflow-y:auto dari responsive.css */
+    justify-content: space-between;     /* sisa tinggi dibagi jadi jarak antar bagian */
+    gap: 8px;
+    gap: clamp(8px, 1.5vh, 14px);
+    gap: clamp(8px, 1.5dvh, 14px);
+  }
+
+  /* Layar 1: Mulai */
+  .ujian-start-head { gap: 10px; }
+  .ujian-start-ico { width: 36px; height: 36px; border-radius: 12px; }
+  .ujian-start-ico svg { width: 19px; height: 19px; }
+  .ujian-start-title { font-size: 15px; }
+  .ujian-start-sub { font-size: 10.5px; margin-top: 1px; }
+
+  .ujian-howto { padding: 8px 12px; border-radius: 12px; }
+  .ujian-howto-title { font-size: 10.5px; margin-bottom: 4px; }
+  .ujian-howto-list { gap: 5px; }
+  .ujian-howto-list li { font-size: 10.5px; line-height: 1.3; gap: 8px; }
+  .ujian-step-ico { width: 14px; height: 14px; }
+  .inline-ico { width: 11px; height: 11px; }
+
+  .ujian-diff-label { font-size: 10.5px; margin-bottom: 5px; }
+  .ujian-diff-bar { gap: 8px; }
+  .diff-chip { padding: 8px 2px; gap: 3px; font-size: 11px; border-radius: 12px; min-width: 0; }
+  .diff-ico { width: 17px; height: 17px; }
+
+  .ujian-config-row { gap: 8px; min-height: 50px; }
+  .ujian-custom-fields { gap: 8px; }
+  .ujian-field { font-size: 10px; gap: 4px; }
+  .ujian-field .field-ico { display: none; }
+  .ujian-field input { padding: 6px 8px; font-size: 12.5px; border-radius: 10px; }
+  .ujian-preview { padding: 4px 6px; gap: 2px 4px; font-size: 10.5px; line-height: 1.25; border-radius: 12px; }
+  .ujian-preview .field-ico { display: none; }
+
+  .ujian-btn-mulai { padding: 11px; font-size: 14px; gap: 8px; border-radius: 14px; }
+  .ujian-btn-mulai svg { width: 15px; height: 15px; }
+
+  /* Layar 2: Ujian berlangsung */
+  .ujian-stats-row { gap: 6px; }
+  .stat-card { padding: 6px 2px; border-radius: 10px; gap: 1px; }
+  .stat-label { font-size: 8px; letter-spacing: .2px; white-space: nowrap; }
+  .stat-value { font-size: 13px; }
+  .ujian-question { padding: 10px; gap: 6px; }
+  .ujian-question-label { font-size: 10.5px; }
+  .ujian-question-target { font-size: clamp(34px, 10vh, 72px); font-size: clamp(34px, 10dvh, 72px); }
+  .ujian-question-feedback { min-height: 30px; font-size: 12.5px; }
+  .ujian-question-feedback .fb-ico { width: 22px; height: 22px; }
+  .ujian-question-feedback .fb-ico svg { width: 13px; height: 13px; }
+  .ujian-actions { gap: 10px; }
+  .ujian-actions button { padding: 10px; min-height: 40px; font-size: 12.5px; }
+
+  /* Layar 3: Hasil */
+  .ujian-result-emoji { font-size: 30px; margin-bottom: 2px; }
+  .ujian-result-title { font-size: 16px; }
+  .ujian-result-sub { font-size: 10.5px; margin-top: 1px; }
+  .ujian-result-score { padding: 8px 22px; font-size: 26px; border-radius: 14px; }
+  .ujian-result-score-unit { font-size: 12px; }
+}
+
+
+/* ---------- 4. HP PENDEK & SANGAT KECIL ---------- */
+@media (max-width: 640px) and (max-height: 700px) {
+  .ujian-start-sub,
+  .ujian-howto-title,
+  .ujian-result-sub { display: none; }
+}
+@media (max-width: 640px) and (max-height: 880px) {
+  /* shortcut: "Cara Mengerjakan" disembunyikan di HP < 880px tinggi (kamera+info ditumpuk memakan tinggi), upgrade bila layar Mulai dibuat scroll */
+  .ujian-howto { display: none; }
+}
+@media (max-width: 640px) and (max-height: 620px) {
+  .ujian-result-emoji { display: none; }
+}
+@media (max-width: 360px) {
+  .diff-chip { font-size: 10px; }
+  .stat-label { font-size: 7px; }
+  .stat-value { font-size: 12px; }
+  .ujian-preview { font-size: 9.5px; }
+}
+
+/* ---------- Atur Soal: HP & layar pendek ---------- */
+@media (max-width: 640px) {
+  .ujian-set-btn { padding: 5px 7px; gap: 6px; border-radius: 12px; }
+  .ujian-set-btn-ico { width: 22px; height: 22px; border-radius: 7px; }
+  .ujian-set-btn-ico svg { width: 12px; height: 12px; }
+  .ujian-set-btn-text b { font-size: 11px; }
+  .ujian-set-btn-text small { font-size: 9px; }
+
+  .ujian-set-card { padding: 14px; gap: 11px; border-radius: 18px; }
+  .ujian-set-head-ico { width: 34px; height: 34px; border-radius: 12px; }
+  .ujian-set-head-ico svg { width: 18px; height: 18px; }
+  .ujian-set-title { font-size: 15px; }
+  .ujian-set-sub { font-size: 11px; }
+  .uj-chip { padding: 6px 10px; font-size: 12px; }
+  .uj-seg { padding: 8px 2px; font-size: 11px; }
+  .uj-seg svg { width: 18px; height: 18px; }
+  .ujian-set-info { padding: 7px 10px; font-size: 11.5px; }
+  .ujian-set-cancel, .ujian-set-ok { padding: 10px; font-size: 13px; }
+}
+@media (max-height: 480px) {
+  .ujian-set-sub { display: none; }
+  .ujian-set-card { padding: 10px 12px; gap: 8px; }
+  .ujian-set-sec { gap: 5px; }
+  .uj-seg { flex-direction: row; justify-content: center; padding: 6px 4px; }
+  .ujian-set-info { padding: 5px 10px; }
+}
+
+/* ---------- Atur Soal v2: HP & layar pendek ---------- */
+@media (max-width: 640px) {
+  .uj-field-btn { min-height: 40px; padding: 5px 10px; gap: 8px; }
+  .uj-fb-text b { font-size: 12px; }
+  .uj-fb-text small { font-size: 10px; }
+  .uj-pick-grid { grid-template-rows: repeat(3, 42px); height: 138px; }
+  .ujian-pilih-card .bh-title { font-size: 15px; }
+  .ujian-pilih-card .bh-sub { font-size: 11px; }
+}
+@media (max-height: 640px) {
+  .ujian-set-card { gap: 9px; }
+  .ujian-set-card .ujian-set-sub, .ujian-set-card .bh-sub { display: none; }
+  .ujian-set-card .uj-seg { flex-direction: row; justify-content: center; gap: 6px; padding: 7px 4px; }
+}
+@media (max-height: 480px) {
+  .ujian-pilih-card .bh-search { display: none; }
+  .ujian-pilih-card .bh-grid { grid-template-rows: repeat(3, 38px); height: 126px; }
+  .uj-pick-grid { grid-template-rows: repeat(3, 38px); height: 126px; }
+}
+
+/* ---------- Layar Ujian berlangsung & Hasil (v2): tablet, HP, layar pendek ---------- */
+@media (max-width: 1024px), (max-height: 540px) {
+  .uj2-question { flex: none; min-height: clamp(140px, 26vh, 260px); }
+  .uj2-wrap { flex: none; }
+}
+@media (max-width: 640px) {
+  .uj2-stats { gap: 5px; }
+  .uj2-stat { gap: 6px; padding: 6px 7px; border-radius: 12px; }
+  .uj2-stat-wide { flex: 1.45; }
+  .uj2-stat-ico { width: 22px; height: 22px; border-radius: 7px; }
+  .uj2-stat-ico svg { width: 12px; height: 12px; }
+  .uj2-stat-txt small { font-size: 7.5px; letter-spacing: .3px; }
+  .uj2-stat-txt b { font-size: 13px; }
+  .uj2-progress { height: 8px; }
+  .uj2-question { padding: 8px; gap: 6px; border-radius: 16px; }
+  .uj2-q-badge { padding: 4px 10px; font-size: 10px; gap: 6px; }
+  .uj2-q-badge svg { width: 13px; height: 13px; }
+  .uj2-q-target { padding: 2px 18px; border-radius: 16px; font-size: clamp(34px, min(10dvh, 16vw), 72px); }
+  .uj2-actions { gap: 8px; }
+  .uj2-btn { padding: 10px 8px; min-height: 40px; font-size: 12.5px; gap: 6px; border-radius: 12px; }
+  .uj2-btn svg { width: 15px; height: 15px; }
+
+  .uj2-wrap { gap: 8px; justify-content: space-between; }
+  .uj2-hero { gap: 12px; padding: 12px 12px 10px; border-radius: 16px; }
+  .uj2-medal { width: 38px; height: 38px; border-radius: 12px; }
+  .uj2-medal svg { width: 20px; height: 20px; }
+  .uj2-hero-text { gap: 4px; }
+  .uj2-result-title { font-size: 15px; }
+  .uj2-result-sub { font-size: 10.5px; }
+  .uj2-result-name { font-size: 11.5px; padding: 3px 10px; }
+  .uj2-score-ring { width: 76px; height: 76px; }
+  .uj2-score-ring b { width: 60px; height: 60px; font-size: 22px; }
+  .uj2-score-ring small { font-size: 9px; }
+  .uj2-result-stats { gap: 6px; }
+  .uj2-btn .lbl-long { display: none; }
+  .uj2-btn .lbl-short { display: inline; }
+
+  .uj-cert-card .ujian-set-sub { display: none; }
+}
+@media (max-width: 480px) {
+  .uj2-stats .uj2-stat-txt small { display: none; }   /* HP kecil: ikon berwarna + angka saja */
+}
+@media (max-width: 360px) {
+  .uj2-stat { padding: 5px; gap: 4px; }
+  .uj2-stat-ico { width: 18px; height: 18px; }
+  .uj2-stat-txt b { font-size: 12px; }
+}
+@media (max-width: 640px) and (max-height: 700px) { .uj2-result-sub { display: none; } }
+@media (max-width: 640px) and (max-height: 620px) { .uj2-medal { display: none; } }
+@media (max-height: 480px) {
+  .uj-cert-view canvas { max-height: calc(100dvh - 130px); }
+}

@@ -1,0 +1,92 @@
+/* ASTA KANDA — popup hasil (statistik, tombol sertifikat), tombol suara, popup sertifikat */
+/* Statistik: 3 kartu sama lebar, memenuhi lebar popup */
+.asta-hasil-stats {
+  width: 100%;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+.asta-hasil-stats .stat-card { padding: 10px 6px; border-radius: 14px; gap: 4px; min-width: 0; }
+.asta-hasil-stats .stat-label { font-size: 10px; letter-spacing: .6px; }
+.asta-hasil-stats .stat-value { font-size: 20px; line-height: 1.1; }
+
+/* Grup tombol: jarak antar baris konsisten, tanpa scroll horizontal */
+.asta-actions-wrap { flex-wrap: wrap !important; justify-content: center; row-gap: 10px; }
+
+/* Tombol Sertifikat: selebar popup, tinggi & sudut selaras dengan tombol lain */
+.asta-btn-sertifikat {
+  width: 100% !important;
+  min-height: 50px;
+  padding: 0 18px !important;
+  border: none !important;
+  border-radius: 16px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #78350f !important;
+  background: linear-gradient(135deg, #fde68a, #fbbf24) !important;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, .28) !important;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.asta-btn-sertifikat:hover { transform: translateY(-1px); }
+.asta-btn-sertifikat:active { transform: translateY(0); box-shadow: 0 3px 8px rgba(245, 158, 11, .25) !important; }
+.asta-btn-sertifikat svg { width: 18px; height: 18px; flex: 0 0 auto; }
+
+/* Layar pendek: sedikit dirapatkan agar popup tetap penuh terlihat */
+@media (max-height: 640px) {
+  .asta-hasil-stats { margin: 8px 0 4px; }
+  .asta-hasil-stats .stat-value { font-size: 17px; }
+  .asta-btn-sertifikat { min-height: 42px; }
+}
+
+/* Tombol suara di topbar permainan */
+.asta-sound-btn .asta-ico-off { display: none; }
+.asta-sound-btn.is-muted { color: var(--tab-riwayat); }
+.asta-sound-btn.is-muted .asta-ico-on { display: none; }
+.asta-sound-btn.is-muted .asta-ico-off { display: block; }
+
+/* Popup sertifikat: tanpa scroll, kanvas menyesuaikan tinggi layar */
+#modal-sertifikat .asta-cert-box {
+  width: min(860px, calc(100vw - 32px));
+  max-width: none;
+  max-height: none;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  overflow: visible;
+}
+#asta-cert-canvas {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 160px);
+  border-radius: 14px;
+  box-shadow: 4px 4px 12px var(--shadow-dark), -4px -4px 12px var(--shadow-light);
+}
+.asta-cert-actions { flex-wrap: wrap; justify-content: center; }
+
+/* Popup hasil: lebih lebar, jarak antar-elemen lega, tetap pas di layar */
+.asta-hasil-card {
+  width: min(540px, calc(100vw - 32px)) !important;
+  max-width: none !important;
+  box-sizing: border-box;
+  padding: 30px 36px !important;
+  gap: 16px;
+}
+.asta-hasil-card .game-over-row { gap: 12px; }
+@media (max-width: 520px) { .asta-hasil-card { padding: 22px 18px !important; } }
+@media (max-height: 640px) { .asta-hasil-card { padding: 20px 28px !important; gap: 10px; } }
+
+/* Tombol popup sertifikat: ikon + teks sejajar */
+.asta-cert-actions .neu-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.asta-cert-actions .neu-btn svg { width: 17px; height: 17px; flex: 0 0 auto; }

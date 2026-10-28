@@ -1,0 +1,636 @@
+/* =====================================================================
+   ASTA KANDA — Ujian (CSS terpisah)
+   Memakai custom properties (--ink-*, --tab-*, dst) yang didefinisikan
+   di :root pada assets-astakanda/css/style.css (wajib dimuat lebih dulu).
+   ===================================================================== */
+
+/* Kolom kanan Ujian: layout & posisi grid sama seperti .right-col */
+.ujian-col {
+  min-height: 0;
+  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden; /* jaga-jaga: tetap tanpa scroll */
+}
+.ujian-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- Layar 1: Mulai ---------- */
+.ujian-start-head { display: flex; align-items: center; gap: 14px; }
+.ujian-start-ico {
+  flex: 0 0 auto;
+  width: 46px; height: 46px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tab-ujian);
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+}
+.ujian-start-ico svg { width: 24px; height: 24px; stroke: #fff; }
+.ujian-start-title { font-size: 19px; font-weight: 800; color: var(--ink-900); }
+.ujian-start-sub { font-size: 12.5px; color: var(--ink-500); font-weight: 500; margin-top: 2px; }
+
+.ujian-howto {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+  padding: 12px 16px;
+}
+.ujian-howto-title { font-size: 12px; font-weight: 800; letter-spacing: .5px; color: var(--ink-900); margin-bottom: 6px; }
+.ujian-howto-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.ujian-howto-list li {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12.5px; line-height: 1.45; color: var(--ink-700); font-weight: 500;
+}
+.ujian-step-ico {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tab-belajar);
+}
+.ujian-step-ico svg { width: 100%; height: 100%; }
+.ujian-step-ico img { width: 100%; height: 100%; object-fit: contain; }
+.ujian-step-text { position: relative; top: 2px; }
+.inline-ico {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin-left: 2px;
+  color: var(--ink-900);
+}
+
+.ujian-diff-label { font-size: 12px; font-weight: 800; color: var(--ink-900); margin-bottom: 6px; }
+.ujian-diff-bar { display: flex; gap: 8px; flex-wrap: nowrap; }
+.diff-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 9px 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-700);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  transition: box-shadow .12s ease, transform .12s ease, color .12s ease, background-color .12s ease;
+  white-space: nowrap;
+}
+.diff-ico { width: 20px; height: 20px; color: var(--ink-400, var(--ink-500)); }
+.diff-chip[data-diff="mudah"] .diff-ico  { color: var(--tab-belajar); }
+.diff-chip[data-diff="sedang"] .diff-ico { color: var(--tab-ujian); }
+.diff-chip[data-diff="sulit"] .diff-ico  { color: var(--tab-riwayat); }
+.diff-chip[data-diff="custom"] .diff-ico { color: var(--ink-500); }
+
+.diff-chip.is-active {
+  color: #fff;
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,.22), inset -3px -3px 6px rgba(255,255,255,.06);
+}
+.diff-chip.is-active .diff-ico { color: #fff; opacity: 1 !important; }
+.diff-chip[data-diff="mudah"].is-active  { background: var(--tab-belajar); }
+.diff-chip[data-diff="sedang"].is-active { background: var(--tab-ujian); }
+.diff-chip[data-diff="sulit"].is-active  { background: var(--tab-riwayat); }
+.diff-chip[data-diff="custom"].is-active { background: var(--accent); }
+
+/* Baris konfigurasi: field Waktu, field Jumlah Soal, dan preview — dibuat
+   SEBARIS (3 kolom) memakai .ujian-config-row supaya saat mode Custom aktif
+   tinggi total tidak bertambah (tidak menambah baris baru) dan seluruh layar
+   Mulai Ujian tetap 100% terlihat tanpa scroll, konsisten dengan .ujian-diff-bar. */
+.ujian-config-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.ujian-config-row .ujian-custom-fields {
+  flex: 2;
+  min-width: 0;
+}
+.ujian-config-row .ujian-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+.ujian-custom-fields { display: flex; gap: 10px; }
+.ujian-field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 700; color: var(--ink-500); }
+.ujian-field span { display: flex; align-items: center; gap: 5px; }
+.field-ico { width: 14px; height: 14px; flex: 0 0 auto; color: var(--ink-500); }
+.ujian-field input {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+  width: 100%;
+}
+
+.ujian-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  text-align: center;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ink-700);
+}
+.ujian-preview .field-ico { color: var(--ink-700); }
+.ujian-preview b { color: var(--ink-900); }
+
+.ujian-btn-mulai {
+  margin-top: auto;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.ujian-btn-mulai svg { width: 17px; height: 17px; }
+
+/* ---------- Modal: syarat minimal rekaman ---------- */
+.modal-icon-notice { background: linear-gradient(145deg, #fff3d9, #fffaf0) !important; }
+.modal-icon-notice svg { stroke: var(--tab-ujian) !important; }
+
+/* ---------- Modal: tambah kata/alfabet ---------- */
+.modal-icon-tambah { background: linear-gradient(145deg, #d7f7e6, #f2fff8) !important; }
+.modal-icon-tambah svg { stroke: var(--tab-belajar) !important; }
+
+/* ---------- Layar 2: Ujian berlangsung ---------- */
+.ujian-stats-row { display: flex; gap: 8px; }
+.stat-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 9px 4px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+}
+.stat-label { font-size: 9.5px; letter-spacing: .5px; font-weight: 800; color: var(--ink-500); text-transform: uppercase; }
+.stat-value { font-size: 16px; font-weight: 800; color: var(--ink-900); }
+.stat-good .stat-value { color: var(--tab-belajar); }
+.stat-bad .stat-value { color: var(--tab-riwayat); }
+
+.ujian-progress-track { width: 100%; }
+.ujian-progress-fill { background: var(--tab-ujian); }
+
+.ujian-question {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 12px;
+}
+.ujian-question-label { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--ink-500); text-transform: uppercase; }
+.ujian-question-target {
+  font-size: clamp(42px, 9vh, 88px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ink-900);
+}
+.ujian-question-feedback { font-size: 13.5px; font-weight: 800; min-height: 18px; }
+.ujian-question-feedback.is-correct { color: var(--tab-belajar); }
+.ujian-question-feedback.is-skip { color: var(--tab-riwayat); }
+
+.ujian-actions { display: flex; gap: 10px; }
+.ujian-actions button { flex: 1; padding: 11px; font-weight: 700; }
+
+/* ---------- Layar 3: Hasil ---------- */
+.ujian-result-head { text-align: center; }
+.ujian-result-emoji { font-size: 40px; line-height: 1; display: block; margin-bottom: 4px; }
+.ujian-result-title { font-size: 19px; font-weight: 800; color: var(--ink-900); }
+.ujian-result-sub { font-size: 12.5px; color: var(--ink-500); font-weight: 500; margin-top: 2px; }
+
+.ujian-result-score {
+  align-self: center;
+  padding: 14px 28px;
+  border-radius: 18px;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--ink-900);
+}
+.ujian-result-score-unit { font-size: 15px; font-weight: 700; color: var(--ink-500); }
+
+/* =====================================================================
+   Atur Soal (mode Custom) + feedback Benar/Salah berikon + dark theme
+   ===================================================================== */
+.ujian-set-btn.hidden,
+.ujian-set-modal.hidden { display: none !important; }
+
+/* Tombol di baris konfigurasi (menggantikan preview saat Custom) */
+.ujian-set-btn {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  border: none; cursor: pointer; text-align: left;
+  padding: 8px 10px; border-radius: 12px;
+  background: var(--surface); color: var(--ink-900);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.ujian-set-btn:active {
+  transform: scale(.97);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+}
+.ujian-set-btn-ico {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tab-ujian); color: #fff;
+}
+.ujian-set-btn-ico svg { width: 15px; height: 15px; }
+.ujian-set-btn-text { min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.ujian-set-btn-text b { font-size: 13px; font-weight: 800; color: var(--ink-900); }
+.ujian-set-btn-text small {
+  font-size: 10.5px; font-weight: 600; color: var(--ink-500);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Popup */
+.ujian-set-modal {
+  position: fixed; inset: 0; z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px; background: rgba(12, 18, 32, .55);
+}
+.ujian-set-card {
+  width: 100%; max-width: 420px;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  /* shortcut: overflow-y hanya jaring pengaman layar sangat pendek, upgrade bila chip bahasa > ~8 */
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 18px; border-radius: 20px;
+  background: var(--surface); color: var(--ink-900);
+  box-shadow: 8px 8px 24px rgba(0, 0, 0, .28), -4px -4px 14px var(--shadow-light);
+}
+.ujian-set-head { display: flex; align-items: center; gap: 12px; }
+.ujian-set-head-ico {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tab-ujian); color: #fff;
+}
+.ujian-set-head-ico svg { width: 21px; height: 21px; }
+.ujian-set-title { font-size: 17px; font-weight: 800; color: var(--ink-900); }
+.ujian-set-sub { font-size: 12px; font-weight: 500; color: var(--ink-500); margin-top: 1px; }
+.ujian-set-sec { display: flex; flex-direction: column; gap: 7px; }
+.ujian-set-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--ink-900); }
+.ujian-set-label svg { width: 14px; height: 14px; color: var(--ink-500); }
+
+.ujian-set-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.uj-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; cursor: pointer; padding: 7px 12px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; color: var(--ink-700);
+  background: var(--surface);
+  box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+}
+.uj-chip svg { width: 13px; height: 13px; opacity: 0; } /* lebar tetap, chip tidak "loncat" */
+.uj-chip.is-on { background: var(--tab-belajar); color: #fff; }
+.uj-chip.is-on svg { opacity: 1; }
+
+.ujian-set-seg { display: flex; gap: 8px; }
+.uj-seg {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: none; cursor: pointer; padding: 10px 4px; border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: var(--ink-700);
+  background: var(--surface);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+.uj-seg svg { width: 20px; height: 20px; }
+.uj-seg.is-on {
+  background: var(--tab-ujian); color: #fff;
+  box-shadow: inset 3px 3px 6px rgba(0,0,0,.22), inset -3px -3px 6px rgba(255,255,255,.06);
+}
+
+.ujian-set-info {
+  padding: 9px 12px; border-radius: 12px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink-700); background: var(--surface);
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+}
+.ujian-set-info b { color: var(--ink-900); }
+.ujian-set-info.is-warn, .ujian-set-info.is-warn b { color: var(--tab-riwayat); }
+
+.ujian-set-foot { display: flex; gap: 10px; }
+.ujian-set-cancel, .ujian-set-ok {
+  flex: 1; border: none; cursor: pointer; padding: 11px;
+  border-radius: 14px; font-size: 13.5px; font-weight: 800;
+}
+.ujian-set-cancel {
+  background: var(--surface); color: var(--ink-700);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+.ujian-set-ok { background: var(--tab-ujian); color: #fff; }
+.ujian-set-ok:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Feedback Benar / Salah (tanpa emoji, pakai ikon) */
+.ujian-question-feedback { display: flex; align-items: center; justify-content: center; min-height: 30px; }
+.fb-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 14px 4px 5px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 800;
+  animation: fbPop .18s ease-out;
+}
+.fb-ico {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.fb-ico svg { width: 14px; height: 14px; }
+.ujian-question-feedback.is-correct .fb-chip { background: rgba(16, 185, 129, .14); }
+.ujian-question-feedback.is-correct .fb-ico  { background: var(--tab-belajar); }
+.ujian-question-feedback.is-skip .fb-chip    { background: rgba(244, 63, 94, .14); }
+.ujian-question-feedback.is-skip .fb-ico     { background: var(--tab-riwayat); }
+@keyframes fbPop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ---------------------------------------------------------------------
+   DARK THEME — layout & konten lebih jelas.
+   Daftar selector tema gelap ada di :is(...) di bawah; kalau toggle tema
+   Anda memakai penanda lain, cukup tambahkan/ganti di daftar itu.
+   !important dipakai karena saya tidak melihat aturan dark di style.css.
+   --------------------------------------------------------------------- */
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
+  .ujian-start-title, .ujian-howto-title, .ujian-diff-label, .ujian-question-target,
+  .ujian-result-title, .ujian-result-score, .ujian-preview b, .inline-ico,
+  .ujian-set-title, .ujian-set-label, .ujian-set-info b, .ujian-set-btn-text b, .stat-value
+) { color: #f4f7fb !important; }
+
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
+  .ujian-start-sub, .ujian-howto-list li, .ujian-field, .ujian-field span, .field-ico,
+  .stat-label, .ujian-question-label, .ujian-result-sub, .ujian-result-score-unit,
+  .ujian-preview, .ujian-set-sub, .ujian-set-btn-text small, .ujian-set-label svg, .ujian-set-info
+) { color: #c3ccda !important; }
+
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .stat-good .stat-value { color: #4ade80 !important; }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .stat-bad  .stat-value { color: #fb7185 !important; }
+
+/* Kartu & kolom input: latar sedikit lebih terang + cincin tipis (tanpa mengubah ukuran) */
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
+  .ujian-howto, .ujian-preview, .stat-card, .ujian-question, .ujian-result-score,
+  .ujian-set-info, .ujian-field input
+) {
+  background: rgba(255, 255, 255, .07) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18) !important;
+}
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-field input {
+  background: rgba(255, 255, 255, .09) !important;
+  color: #fff !important;
+}
+
+/* Tombol/chip yang belum aktif */
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode)
+  :is(.diff-chip, .uj-chip, .uj-seg, .ujian-set-btn, .ujian-set-cancel, #ujian-btn-lewati, #ujian-btn-selesai):not(.is-active):not(.is-on) {
+  background: rgba(255, 255, 255, .08) !important;
+  color: #e6ebf3 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22) !important;
+}
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-btn-mulai {
+  background: var(--tab-ujian) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3) !important;
+}
+
+/* Popup & feedback di dark */
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-set-modal { background: rgba(0, 0, 0, .72); }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-set-card {
+  background: #1a2130 !important; color: #f4f7fb;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .18), 0 20px 50px rgba(0, 0, 0, .6) !important;
+}
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-question-feedback.is-correct { color: #4ade80 !important; }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-question-feedback.is-skip    { color: #fb7185 !important; }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-question-feedback.is-correct .fb-chip { background: rgba(74, 222, 128, .2); }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .ujian-question-feedback.is-skip .fb-chip    { background: rgba(251, 113, 133, .2); }
+
+/* ===== Atur Soal v2: tombol pilihan + pop up pilih (memakai kelas .bh-* dari style.css) ===== */
+.uj-field-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; box-sizing: border-box; min-height: 44px;
+  padding: 6px 12px; border: none; cursor: pointer; border-radius: 12px;
+  background: var(--surface); color: var(--ink-900);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+  font: inherit; text-align: left;
+}
+.uj-fb-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.uj-fb-text b { font-size: 13px; font-weight: 800; color: var(--ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uj-fb-text small { font-size: 11px; font-weight: 600; color: var(--ink-500); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uj-fb-chev { width: 16px; height: 16px; flex: 0 0 auto; color: var(--ink-500); }
+
+/* Pop up pilih */
+.ujian-pilih-card { gap: 12px; }
+.ujian-pilih-card .bh-search .bh-search-ico { left: 14px; }
+#ujian-pilih-search { padding: 0 14px 0 42px !important; text-indent: 0 !important; text-align: left !important; }
+/* style.css menyembunyikan .bh-card-sub di layar <= 440px; di sini jumlah alfabet/kata harus tetap tampil */
+.ujian-pilih-card .bh-grid:not(.uj-pick-grid) .bh-card-sub { display: block; }
+
+/* Grid pilih soal: 4 kolom x 3 baris = 12 per halaman (tanpa scroll) */
+.uj-pick-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, 46px);
+  height: 154px;
+}
+.uj-pick-grid .bh-card { justify-content: center; padding: 0 6px; }
+.uj-pick-grid .bh-card-info { align-items: center; max-width: 100%; }
+.uj-pick-grid .bh-card-sub { display: none; }
+
+/* Dark theme: batas kartu lebih jelas */
+html[data-theme='dark'] .uj-field-btn {
+  background: rgba(255, 255, 255, .08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+html[data-theme='dark'] .ujian-set-card .bh-card,
+html[data-theme='dark'] .ujian-set-card .bh-nav,
+html[data-theme='dark'] .ujian-set-card .bh-close {
+  background: rgba(255, 255, 255, .08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .2);
+}
+html[data-theme='dark'] .ujian-set-card .bh-card.is-active { box-shadow: none; }
+html[data-theme='dark'] .ujian-set-card .bh-search input {
+  background: rgba(255, 255, 255, .08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
+}
+
+/* =====================================================================
+   Layar Ujian berlangsung & Hasil (v2, ikon SVG) + popup Nama + Sertifikat
+   ===================================================================== */
+.uj2-stats { display: flex; gap: 10px; }
+.uj2-stat {
+  --c: var(--ink-700);
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 4px 4px 9px var(--shadow-dark), -4px -4px 9px var(--shadow-light);
+}
+.uj2-stat-ico {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 11px;
+  display: grid; place-items: center; background: var(--c); color: #fff;
+}
+.uj2-stat-ico svg { width: 18px; height: 18px; }
+.uj2-stat-txt { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.uj2-stat-txt small { font-size: 10px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-500); white-space: nowrap; }
+.uj2-stat-txt b { font-size: 18px; font-weight: 800; color: var(--ink-900); white-space: nowrap; }
+.uj2-stat-time { --c: var(--tab-game); }
+.uj2-stat-soal { --c: var(--tab-ujian); }
+.uj2-stat-good { --c: var(--tab-belajar); }
+.uj2-stat-bad  { --c: var(--tab-riwayat); }
+.uj2-stat-gold { --c: #d4a017; }
+.uj2-stat-good .uj2-stat-txt b { color: var(--tab-belajar); }
+.uj2-stat-bad  .uj2-stat-txt b { color: var(--tab-riwayat); }
+
+.uj2-progress {
+  flex: 0 0 auto; height: 10px; border-radius: 999px; overflow: hidden;
+  background: var(--surface);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+}
+.uj2-progress i {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, var(--tab-ujian), #fbbf24);
+  transition: width .25s ease;
+}
+
+.uj2-question {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 14px; border-radius: 22px; text-align: center;
+  background: var(--surface);
+  box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+}
+.uj2-q-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+  color: #fff; background: var(--tab-ujian);
+}
+.uj2-q-badge svg { width: 16px; height: 16px; }
+.uj2-q-target {
+  max-width: 100%; overflow-wrap: anywhere;
+  padding: 6px 30px; border-radius: 22px;
+  font-size: clamp(44px, min(12vh, 9vw), 120px); font-weight: 800; line-height: 1.05;
+  color: var(--ink-900); background: var(--surface);
+  box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+}
+
+.uj2-actions { flex: 0 0 auto; display: flex; gap: 10px; }
+.uj2-btn {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; border: none; border-radius: 14px; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 800; white-space: nowrap;
+  transition: transform .12s ease;
+}
+.uj2-btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.uj2-btn:active { transform: scale(.97); }
+.uj2-btn-ghost {
+  background: var(--surface); color: var(--ink-700);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+.uj2-btn-danger  { background: var(--tab-riwayat); color: #fff; }
+.uj2-btn-primary { background: var(--tab-ujian); color: #fff; }
+.uj2-btn-cert    { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+.uj2-btn .lbl-short { display: none; }
+
+/* Hasil */
+.uj2-wrap {
+  width: 100%; max-width: 760px; margin: 0 auto;
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+}
+.uj2-hero {
+  --c: var(--tab-belajar);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  padding: 18px 20px 16px; border-radius: 22px;
+  background: var(--surface);
+  box-shadow: inset 4px 4px 9px var(--shadow-dark), inset -4px -4px 9px var(--shadow-light);
+}
+.uj2-hero[data-tone="mid"] { --c: var(--tab-ujian); }
+.uj2-hero[data-tone="low"] { --c: var(--tab-riwayat); }
+.uj2-hero::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--c); }
+.uj2-medal {
+  flex: 0 0 auto; width: 54px; height: 54px; border-radius: 18px;
+  display: grid; place-items: center; background: var(--c); color: #fff;
+  box-shadow: 4px 4px 10px var(--shadow-dark);
+}
+.uj2-medal svg { width: 28px; height: 28px; }
+.uj2-hero-text { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.uj2-result-title { font-size: 20px; font-weight: 800; color: var(--ink-900); }
+.uj2-result-sub { font-size: 12.5px; font-weight: 600; color: var(--ink-500); }
+.uj2-result-name {
+  display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 13px; font-weight: 800; color: var(--ink-900); background: var(--surface);
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+}
+.uj2-result-name svg { width: 14px; height: 14px; flex: 0 0 auto; color: var(--c); }
+.uj2-result-name span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uj2-score-ring {
+  flex: 0 0 auto; width: 116px; height: 116px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: conic-gradient(var(--c) calc(var(--p, 0) * 1%), rgba(148, 163, 184, .28) 0);
+}
+.uj2-score-ring b {
+  width: 92px; height: 92px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: var(--surface); line-height: 1; font-size: 32px; font-weight: 800; color: var(--ink-900);
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+}
+.uj2-score-ring small { font-size: 12px; font-weight: 700; color: var(--ink-500); }
+.uj2-result-stats { display: flex; gap: 10px; }
+
+/* Popup nama */
+.uj-nama-card { max-width: 380px; }
+.uj-nama-field {
+  display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 12px;
+  color: var(--ink-500); background: var(--surface);
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+}
+.uj-nama-field:focus-within { color: var(--tab-ujian); box-shadow: inset 3px 3px 6px var(--shadow-dark), 0 0 0 2px var(--tab-ujian); }
+.uj-nama-field svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.uj-nama-field input {
+  flex: 1; min-width: 0; height: 44px; padding: 0; border: none; outline: none; box-shadow: none;
+  background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-900);
+}
+.uj-nama-err { font-size: 12px; font-weight: 700; color: var(--tab-riwayat); }
+.uj-nama-err.hidden { display: none; }
+.uj-ok-ico { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.uj-ok-ico svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+/* Popup sertifikat */
+.uj-cert-card { max-width: min(96vw, 900px); }
+.uj-cert-view { display: flex; justify-content: center; }
+.uj-cert-view canvas {
+  width: auto; height: auto; max-width: 100%;
+  max-height: calc(100vh - 220px);
+  max-height: calc(100dvh - 220px);
+  border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+}
+
+/* Dark theme */
+html[data-theme='dark'] :is(.uj2-stat, .uj2-hero, .uj2-result-name, .uj-nama-field, .uj2-progress, .uj2-btn-ghost) {
+  background: rgba(255, 255, 255, .07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+html[data-theme='dark'] .uj2-question { background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
+html[data-theme='dark'] .uj2-q-target { background: rgba(255, 255, 255, .09); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2); }
+html[data-theme='dark'] .uj2-score-ring b { background: #1a2130; }

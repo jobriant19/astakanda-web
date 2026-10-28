@@ -1,0 +1,532 @@
+/* =====================================================================
+   ASTA KANDA — historyresponsive.css  (tab Hasil: Riwayat Ujian + Peringkat Game)
+   Letakkan di: public/assets-astakanda/history/historyresponsive.css
+   Muat SETELAH css/responsive.css, history/riwayat.css, dan game/apple/apple.css
+   (kelas .podium-card* untuk podium berasal dari apple.css).
+   Dipasangkan dengan history/riwayat.js.
+
+   Isi: 1 Dasar · 2 Kartu riwayat · 3 Indikator halaman · 4 Tab & Peringkat Game
+        5 Detail riwayat · 6 Popup hapus · 7 Dark theme · 8 Responsive
+   ===================================================================== */
+
+/* ---------- 1. DASAR ---------- */
+/* Muncul langsung: tanpa animasi / transisi pada kontainer */
+#panel-riwayat,
+#riwayat-list-screen,
+#riwayat-detail-screen,
+#panel-riwayat :is(.riwayat-inner, .riwayat-list, .riwayat-review-list, .riwayat-rank-list) {
+  animation: none !important;
+  transition: none !important;
+}
+#panel-riwayat {
+  position: relative;   /* acuan popup hapus */
+  --sh-btn:  3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+  --sh-card: 4px 4px 9px var(--shadow-dark), -4px -4px 9px var(--shadow-light);
+  --sh-row:  5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+  --sh-in:   inset 3px 3px 7px var(--shadow-dark), inset -3px -3px 7px var(--shadow-light);
+  --sh-in-s: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+}
+#panel-riwayat .riwayat-inner { max-width: 620px; }
+
+/* Daftar TIDAK di-scroll: dibagi per halaman oleh riwayat.js.
+   --pg-h / --pg-gap = tinggi & jarak 1 item, dibaca riwayat.js untuk menghitung item per halaman. */
+#panel-riwayat :is(.riwayat-list, .riwayat-review-list, .riwayat-rank-list) {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pg-gap);
+  touch-action: pan-y;   /* geser kiri/kanan = ganti halaman */
+}
+#panel-riwayat .riwayat-list        { --pg-h: 84px; --pg-gap: 10px; padding: 4px 6px 8px 2px; }
+#panel-riwayat .riwayat-review-list { --pg-h: 44px; --pg-gap: 6px;  padding: 2px 4px 6px 2px; }
+
+
+/* ---------- 2. KARTU RIWAYAT ---------- */
+#panel-riwayat .riwayat-item {
+  --tone: var(--tab-belajar);
+  position: relative;
+  box-sizing: border-box;
+  height: var(--pg-h);
+  gap: 12px;
+  padding: 0 12px 0 14px;
+  overflow: hidden;
+  border-radius: 18px;
+  cursor: pointer;
+  outline: none;
+}
+#panel-riwayat .riwayat-item.tone-mid { --tone: var(--tab-ujian); }
+#panel-riwayat .riwayat-item.tone-low { --tone: var(--tab-riwayat); }
+#panel-riwayat .riwayat-item:focus-visible { box-shadow: 0 0 0 3px var(--tone); }
+#panel-riwayat .riwayat-item::before {   /* garis warna di kiri */
+  content: '';
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--tone);
+}
+#panel-riwayat .riwayat-ring {   /* cincin nilai */
+  flex: 0 0 auto;
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: conic-gradient(var(--tone) calc(var(--p, 0) * 1%), rgba(148, 163, 184, .28) 0);
+}
+#panel-riwayat .riwayat-ring b {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface);
+  font-size: 14px; font-weight: 800; color: var(--ink-900);
+  box-shadow: var(--sh-in-s);
+}
+#panel-riwayat .riwayat-item-info { flex: 1; min-width: 0; gap: 4px; }
+#panel-riwayat .riwayat-item-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#panel-riwayat .riwayat-badge {
+  flex: 0 0 auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--bd, #64748b);
+  color: #fff;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
+}
+#panel-riwayat .riwayat-badge.diff-mudah  { --bd: var(--tab-belajar); }
+#panel-riwayat .riwayat-badge.diff-sedang { --bd: var(--tab-ujian); }
+#panel-riwayat .riwayat-badge.diff-sulit  { --bd: var(--tab-riwayat); }
+#panel-riwayat .riwayat-badge.diff-custom { --bd: var(--tab-game); }
+#panel-riwayat .riwayat-item-tanggal { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; }
+#panel-riwayat .tgl-short { display: none; }
+#panel-riwayat .riwayat-item-nama { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12.5px; font-weight: 800; color: var(--ink-900); }
+#panel-riwayat .riwayat-item-nama svg { width: 12px; height: 12px; flex: 0 0 auto; color: var(--tone); }
+#panel-riwayat .riwayat-item-nama span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .riwayat-item-nama.is-kosong { font-weight: 600; font-style: italic; color: var(--ink-500); }
+#panel-riwayat .riwayat-item-meta { font-size: 11.5px; font-weight: 700; color: var(--ink-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#panel-riwayat .riwayat-bar {   /* benar vs salah */
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(244, 63, 94, .35);
+  overflow: hidden;
+}
+#panel-riwayat .riwayat-bar.is-empty { background: rgba(148, 163, 184, .35); }
+#panel-riwayat .riwayat-bar i { display: block; height: 100%; border-radius: 999px; background: var(--tab-belajar); }
+#panel-riwayat .riwayat-item-stats { font-size: 12px; }
+#panel-riwayat :is(.riwayat-item-benar, .riwayat-item-salah) { display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
+#panel-riwayat :is(.riwayat-item-benar, .riwayat-item-salah) svg { width: 12px; height: 12px; stroke-width: 3; }
+
+/* Tombol sertifikat & hapus di kartu */
+#panel-riwayat .riwayat-actions { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; }
+#panel-riwayat :is(.riwayat-del, .riwayat-cert) {
+  flex: 0 0 auto;
+  width: 32px; height: 32px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: grid; place-items: center;
+  background: var(--surface);
+  box-shadow: var(--sh-btn);
+}
+#panel-riwayat :is(.riwayat-del, .riwayat-cert) svg { width: 15px; height: 15px; }
+#panel-riwayat :is(.riwayat-del, .riwayat-cert):active { box-shadow: var(--sh-in-s); }
+#panel-riwayat .riwayat-del { color: var(--tab-riwayat); }
+#panel-riwayat .riwayat-del:hover { color: #e11d48; }
+#panel-riwayat .riwayat-cert { color: #d97706; }
+#panel-riwayat .riwayat-cert:hover { color: #b45309; }
+
+
+/* ---------- 3. INDIKATOR HALAMAN (BAWAH) ---------- */
+#panel-riwayat .riwayat-pager {
+  flex: 0 0 auto;
+  height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+#panel-riwayat .riwayat-pager.is-single { visibility: hidden; }   /* tetap memakai ruang agar tinggi daftar stabil */
+#panel-riwayat .riwayat-pager-btn {
+  width: 30px; height: 30px;
+  border: none; border-radius: 50%;
+  cursor: pointer;
+  display: grid; place-items: center;
+  background: var(--surface);
+  color: var(--ink-700);
+  box-shadow: var(--sh-btn);
+}
+#panel-riwayat .riwayat-pager-btn svg { width: 15px; height: 15px; }
+#panel-riwayat .riwayat-pager-btn:disabled { opacity: .35; cursor: default; }
+#panel-riwayat .riwayat-dots { display: flex; align-items: center; gap: 7px; }
+#panel-riwayat .riwayat-dot {
+  width: 8px; height: 8px; padding: 0;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  background: rgba(100, 116, 139, .35);
+}
+#panel-riwayat .riwayat-dot.is-edge { width: 5px; height: 5px; }
+#panel-riwayat .riwayat-dot.is-active { width: 24px; background: var(--tab-riwayat); }
+
+
+/* ---------- 4. TAB BAR & PERINGKAT GAME ---------- */
+#panel-riwayat .rk-tabs {
+  flex: 0 0 auto; align-self: center;
+  width: 100%; max-width: 400px; box-sizing: border-box;
+  display: flex; gap: 6px;
+  padding: 5px; margin: 0 0 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--sh-in);
+}
+#panel-riwayat .rk-tab {
+  flex: 1; min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 8px 12px;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 800; white-space: nowrap;
+  color: var(--ink-700);
+  background: transparent;
+}
+#panel-riwayat .rk-tab svg { width: 16px; height: 16px; flex: 0 0 auto; }
+#panel-riwayat .rk-tab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#panel-riwayat .rk-tab.is-active { color: #fff; background: var(--tab-riwayat); box-shadow: 0 4px 10px rgba(244, 63, 94, .35); }
+
+#panel-riwayat .riwayat-rank {
+  flex: 1 1 0; min-height: 0;
+  display: flex; flex-direction: column;
+  /* variabel warna yang di game hanya terdefinisi di #game-leaderboard */
+  --ink: var(--ink-900); --ink-soft: #6B7280; --ink-faint: #9AA2AE;
+  --shadow-dark-soft: rgba(163, 171, 185, .4); --shadow-light-soft: rgba(255, 255, 255, .75);
+  --wood: #2EC4B6; --wood-dark: #21A193;
+  --gold: #F5B942; --gold-dark: #C98F1F; --silver: #B9C1CC; --silver-dark: #8C97A5; --bronze: #D98E4A; --bronze-dark: #A9662A;
+}
+#panel-riwayat .rk-games { flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 10px; }
+#panel-riwayat .rk-game {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 10px;
+  border: none; border-radius: 14px;
+  cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 800; color: var(--ink-700);
+  background: var(--surface);
+  box-shadow: var(--sh-card);
+}
+#panel-riwayat .rk-game img { width: 22px; height: 22px; object-fit: contain; flex: 0 0 auto; }
+#panel-riwayat .rk-game span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .rk-game.is-active { color: #fff; background: var(--tab-game); box-shadow: inset 3px 3px 6px rgba(0, 0, 0, .2); }
+
+/* Podium 3 besar (diringkas agar tabel di bawahnya tetap muat tanpa scroll; langsung tampil, tanpa animasi masuk) */
+#panel-riwayat .rk-podium { flex: 0 0 auto; margin: 12px 0 10px; gap: 12px; color: var(--ink-900); }
+#panel-riwayat .rk-podium .riwayat-review-empty { width: 100%; }
+#panel-riwayat .rk-podium .podium-card { flex: 0 1 150px; padding: 12px 10px 0; border-radius: 18px; animation: none; }
+#panel-riwayat .rk-podium .podium-card--rank1 { margin-top: -10px; padding-top: 12px; }
+#panel-riwayat .rk-podium .podium-card__crown { height: 8px; margin: 0; }   /* penyeram tinggi juara 2 & 3 */
+#panel-riwayat .rk-podium .podium-card--rank1 .podium-card__crown { height: 46px; margin-bottom: 4px; }
+#panel-riwayat .rk-podium .podium-card__crown svg { display: block; width: 46px; height: 46px; margin: 0 auto; }
+#panel-riwayat .rk-podium .podium-card__name { font-size: 13.5px; }
+#panel-riwayat .rk-podium .podium-card__score { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 15px; }
+#panel-riwayat .rk-podium .rk-gicon { width: 18px; height: 18px; object-fit: contain; flex: 0 0 auto; }
+#panel-riwayat .rk-podium .podium-card__step { margin: 10px -10px 0; }
+#panel-riwayat .rk-podium .podium-card--rank1 .podium-card__step { height: 52px; font-size: 24px; }
+#panel-riwayat .rk-podium .podium-card--rank2 .podium-card__step { height: 40px; font-size: 20px; }
+#panel-riwayat .rk-podium .podium-card--rank3 .podium-card__step { height: 32px; font-size: 18px; }
+
+/* Tabel peringkat 4 dst */
+#panel-riwayat .riwayat-rank-list { --pg-h: 46px; --pg-gap: 6px; min-height: var(--pg-h); padding: 4px 6px 8px 2px; }
+#panel-riwayat .rk-row {
+  box-sizing: border-box;
+  height: var(--pg-h);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px 0 10px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--sh-row);
+}
+#panel-riwayat .rk-badge {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 13px; font-weight: 800; color: var(--ink-700);
+  background: var(--surface);
+  box-shadow: var(--sh-in-s);
+}
+#panel-riwayat .rk-nama { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; font-family: 'Baloo 2', sans-serif; font-size: 14px; font-weight: 800; color: var(--ink-900); }
+#panel-riwayat .rk-nama span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .rk-avatar {
+  flex: 0 0 auto;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-style: normal; font-size: 12px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--wood), var(--wood-dark));
+}
+#panel-riwayat .rk-skor { flex: 0 0 auto; }
+#panel-riwayat .rk-skor b { font-family: 'Baloo 2', sans-serif; font-size: 17px; font-weight: 800; color: var(--tab-belajar); }
+
+
+/* ---------- 5. DETAIL RIWAYAT ---------- */
+#riwayat-detail-screen .riwayat-inner { gap: 10px; }
+#panel-riwayat .rd-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; min-height: 36px; }
+#panel-riwayat .rd-bar .riwayat-back-btn { position: static; flex: 0 0 auto; width: 36px; height: 36px; }
+#panel-riwayat .rd-bar-title { flex: 1; min-width: 0; text-align: center; font-size: 14px; font-weight: 800; color: var(--ink-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .rd-actions { flex: 0 0 auto; display: flex; gap: 8px; }
+#panel-riwayat .rd-btn {
+  height: 36px;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font: inherit; font-size: 12.5px; font-weight: 800;
+}
+#panel-riwayat .rd-btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+#panel-riwayat .rd-btn-cert { padding: 0 14px 0 12px; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 10px rgba(245, 158, 11, .35); }
+#panel-riwayat .rd-btn-del { width: 36px; color: var(--tab-riwayat); background: var(--surface); box-shadow: var(--sh-btn); }
+
+#panel-riwayat .rd-hero {
+  --g1: #34d399; --g2: #059669;
+  position: relative; overflow: hidden; flex: 0 0 auto;
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .18);
+  background: linear-gradient(135deg, var(--g1), var(--g2));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .14);
+}
+#riwayat-detail-screen[data-tone="mid"] .rd-hero { --g1: #fbbf24; --g2: #d97706; }
+#riwayat-detail-screen[data-tone="low"] .rd-hero { --g1: #fb7185; --g2: #e11d48; }
+#panel-riwayat .rd-hero::after { content: ''; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255, 255, 255, .12); pointer-events: none; }
+#panel-riwayat .rd-medal { flex: 0 0 auto; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+#panel-riwayat .rd-medal svg { width: 28px; height: 28px; }
+#panel-riwayat .rd-info { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+#panel-riwayat .rd-nama { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; font-size: 17px; font-weight: 800; }
+#panel-riwayat .rd-nama svg { width: 16px; height: 16px; flex: 0 0 auto; }
+#panel-riwayat .rd-nama span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .rd-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+#panel-riwayat .rd-chip { padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .3px; color: #fff; background: rgba(255, 255, 255, .28); }
+#panel-riwayat .rd-chip-ghost { background: rgba(0, 0, 0, .22); }
+#panel-riwayat :is(.rd-tanggal, .rd-meta) { font-size: 12px; font-weight: 700; opacity: .95; }
+#panel-riwayat .rd-ring {
+  position: relative; z-index: 1; flex: 0 0 auto;
+  width: 104px; height: 104px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: conic-gradient(#fff calc(var(--p, 0) * 1%), rgba(255, 255, 255, .28) 0);
+}
+#panel-riwayat .rd-ring-in { width: 82px; height: 82px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: rgba(15, 23, 42, .3); }
+#panel-riwayat .rd-ring-in b { font-size: 30px; font-weight: 800; line-height: 1; }
+#panel-riwayat .rd-ring-in small { font-size: 10px; font-weight: 700; opacity: .9; }
+
+#panel-riwayat .rd-stats { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+#panel-riwayat .rd-stat {
+  --c: var(--tab-game);
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--sh-card);
+}
+#panel-riwayat .rd-stat-total { --c: var(--tab-ujian); }
+#panel-riwayat .rd-stat-good  { --c: var(--tab-belajar); }
+#panel-riwayat .rd-stat-bad   { --c: var(--tab-riwayat); }
+#panel-riwayat .rd-stat-ico { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: #fff; background: var(--c); }
+#panel-riwayat .rd-stat-ico svg { width: 18px; height: 18px; }
+#panel-riwayat .rd-stat-txt { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+#panel-riwayat .rd-stat-txt small { font-size: 10px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--ink-500); white-space: nowrap; }
+#panel-riwayat .rd-stat-txt b { font-size: 19px; font-weight: 800; color: var(--ink-900); }
+#panel-riwayat .rd-stat-good .rd-stat-txt b { color: var(--tab-belajar); }
+#panel-riwayat .rd-stat-bad .rd-stat-txt b { color: var(--tab-riwayat); }
+
+#panel-riwayat .rd-akurasi { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; color: var(--ink-700); }
+#panel-riwayat .rd-akurasi b { min-width: 34px; text-align: right; color: var(--ink-900); }
+#panel-riwayat .rd-akurasi-track { flex: 1; height: 8px; border-radius: 999px; overflow: hidden; background: rgba(244, 63, 94, .3); }
+#panel-riwayat .rd-akurasi-track i { display: block; width: 0; height: 100%; border-radius: 999px; background: var(--tab-belajar); }
+#panel-riwayat .rd-section { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--ink-900); }
+#panel-riwayat .rd-section-ico { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; color: #fff; background: var(--tab-riwayat); }
+#panel-riwayat .rd-section-ico svg { width: 14px; height: 14px; }
+
+/* Baris rincian per soal */
+#panel-riwayat .riwayat-review-item {
+  --rc: var(--tab-belajar);
+  box-sizing: border-box;
+  height: var(--pg-h);
+  gap: 10px;
+  padding: 0 12px;
+  border-left: 4px solid var(--rc);
+}
+#panel-riwayat .riwayat-review-item.is-salah { --rc: var(--tab-riwayat); }
+#panel-riwayat .riwayat-review-no { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--rc); color: #fff; font-size: 11px; }
+#panel-riwayat .riwayat-review-target { font-size: 15px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#panel-riwayat .riwayat-review-hasil { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11px; background: rgba(16, 185, 129, .14); }
+#panel-riwayat .riwayat-review-hasil svg { width: 13px; height: 13px; stroke-width: 3; }
+#panel-riwayat .riwayat-review-item.is-salah .riwayat-review-hasil { background: rgba(244, 63, 94, .14); }
+
+
+/* ---------- 6. POPUP KONFIRMASI HAPUS ---------- */
+.riwayat-modal {
+  position: absolute; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, .35);
+  backdrop-filter: blur(5px);
+  border-radius: inherit;
+}
+.riwayat-modal-box {
+  width: 100%; max-width: 320px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 20px 18px 16px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, .22);
+  text-align: center;
+}
+.riwayat-modal-ico { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: rgba(244, 63, 94, .12); color: #e11d48; }
+.riwayat-modal-ico svg { width: 24px; height: 24px; }
+.riwayat-modal-title { font-size: 15.5px; font-weight: 800; color: var(--ink-900); }
+.riwayat-modal-text { font-size: 12.5px; line-height: 1.45; font-weight: 600; color: var(--ink-500); }
+.riwayat-modal-text b { color: var(--ink-900); }
+.riwayat-modal-err { font-size: 12px; font-weight: 700; color: #e11d48; }
+.riwayat-modal-actions { width: 100%; display: flex; gap: 10px; margin-top: 6px; }
+.riwayat-modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 12px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
+.riwayat-modal-cancel { background: var(--surface); color: var(--ink-700); box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light); }
+.riwayat-modal-ok { background: #e11d48; color: #fff; }
+.riwayat-modal-ok:disabled { opacity: .6; cursor: default; }
+
+
+/* ---------- 7. DARK THEME ---------- */
+html[data-theme='dark'] #panel-riwayat :is(.rk-tabs, .rk-game:not(.is-active), .rk-row, .rd-stat, .rd-btn-del, .riwayat-review-item) {
+  background: rgba(255, 255, 255, .07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+html[data-theme='dark'] #panel-riwayat .rk-badge { background: rgba(255, 255, 255, .1); box-shadow: none; }
+html[data-theme='dark'] #panel-riwayat .rk-podium .podium-card { background: rgba(255, 255, 255, .07); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2); }
+html[data-theme='dark'] #panel-riwayat .rk-podium .podium-card__score { color: #f5b942; }
+html[data-theme='dark'] #panel-riwayat .rk-podium .podium-card--rank1::before { opacity: .3; }
+html[data-theme='dark'] #panel-riwayat .rd-hero { box-shadow: 0 0 0 1px rgba(255, 255, 255, .22), 0 10px 22px rgba(0, 0, 0, .4); }
+html[data-theme='dark'] #panel-riwayat .rd-btn-cert { box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+html[data-theme='dark'] .riwayat-modal-box { background: #1a2130; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18), 0 18px 40px rgba(0, 0, 0, .6); }
+html[data-theme='dark'] .riwayat-modal-cancel { background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+
+
+/* ---------- 8. RESPONSIVE ---------- */
+
+/* Tablet & layar pendek (<= 1024px atau tinggi <= 540px): halaman 1 kolom, daftar diberi tinggi pasti */
+@media (max-width: 1024px), (max-height: 540px) {
+  .app-shell .main-grid > #panel-riwayat > :is(#riwayat-list-screen, #riwayat-detail-screen) { min-height: 0; }
+  #panel-riwayat .riwayat-inner { height: auto; max-height: 100%; }
+  #panel-riwayat :is(.riwayat-list, .riwayat-review-list) { flex: 0 0 auto; height: min(56dvh, 520px); max-height: none; }
+  #panel-riwayat .riwayat-rank { flex: 0 0 auto; }
+  #panel-riwayat .riwayat-rank-list { flex: 0 0 auto; height: min(28dvh, 280px); }
+  #riwayat-detail-screen .riwayat-review-list { height: min(34dvh, 340px); }
+}
+
+@media (max-height: 700px) {
+  #panel-riwayat .rk-podium { margin: 10px 0 6px; }
+  #panel-riwayat .rk-podium .podium-card--rank1 .podium-card__crown { height: 34px; }
+  #panel-riwayat .rk-podium .podium-card__crown svg { width: 34px; height: 34px; }
+  #panel-riwayat .rk-podium .podium-card--rank1 .podium-card__step { height: 40px; font-size: 20px; }
+  #panel-riwayat .rk-podium .podium-card--rank2 .podium-card__step { height: 32px; font-size: 17px; }
+  #panel-riwayat .rk-podium .podium-card--rank3 .podium-card__step { height: 26px; font-size: 15px; }
+}
+
+/* HP (<= 640px): panel selebar layar, 1 layar penuh */
+@media (max-width: 640px) {
+  .app-shell .main-grid > #panel-riwayat {
+    grid-column: 1 / -1 !important;
+    grid-row: 4 !important;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: 12px 12px 14px;
+  }
+  .app-shell .main-grid > #panel-riwayat > :is(#riwayat-list-screen, #riwayat-detail-screen) { flex: 1 1 0; min-height: 0; overflow: hidden; }
+  #panel-riwayat .riwayat-inner { height: 100%; max-width: 100%; }
+  #panel-riwayat :is(.riwayat-list, .riwayat-review-list, .riwayat-rank-list, .riwayat-rank) { flex: 1 1 0; height: auto; }
+
+  /* Daftar */
+  #panel-riwayat .riwayat-head { margin-bottom: 10px; }
+  #panel-riwayat .riwayat-title { font-size: 17px; }
+  #panel-riwayat .riwayat-sub { font-size: 11.5px; }
+  #panel-riwayat .riwayat-list { --pg-h: 76px; --pg-gap: 8px; }
+  #panel-riwayat .riwayat-item { gap: 10px; padding: 0 10px 0 12px; border-radius: 16px; }
+  #panel-riwayat .riwayat-ring { width: 48px; height: 48px; }
+  #panel-riwayat .riwayat-ring b { width: 38px; height: 38px; font-size: 13px; }
+  #panel-riwayat .riwayat-badge { padding: 2px 8px; font-size: 10px; }
+  #panel-riwayat .riwayat-item-tanggal { font-size: 10.5px; }
+  #panel-riwayat .tgl-long { display: none; }
+  #panel-riwayat .tgl-short { display: inline; }
+  #panel-riwayat .riwayat-item-nama { font-size: 11.5px; }
+  #panel-riwayat .riwayat-item-meta { font-size: 11px; }
+  #panel-riwayat .riwayat-item-stats { font-size: 11.5px; }
+  #panel-riwayat .riwayat-actions { gap: 4px; }
+  #panel-riwayat :is(.riwayat-del, .riwayat-cert) { width: 30px; height: 30px; }
+  #panel-riwayat .riwayat-empty img { width: clamp(64px, 14dvh, 96px); height: clamp(64px, 14dvh, 96px); }
+  #panel-riwayat .riwayat-empty-text { font-size: 12.5px; }
+
+  /* Tab & peringkat */
+  #panel-riwayat .rk-tabs { margin-bottom: 8px; padding: 4px; }
+  #panel-riwayat .rk-tab { padding: 7px 8px; font-size: 12px; gap: 5px; }
+  #panel-riwayat .rk-tab svg { width: 14px; height: 14px; }
+  #panel-riwayat .rk-games { margin-bottom: 8px; }
+  #panel-riwayat .rk-game { padding: 7px 6px; font-size: 11.5px; gap: 6px; }
+  #panel-riwayat .rk-game img { width: 18px; height: 18px; }
+  #panel-riwayat .rk-podium { gap: 8px; margin: 12px 0 8px; }
+  #panel-riwayat .rk-podium .podium-card { padding: 10px 6px 0; border-radius: 16px; }
+  #panel-riwayat .rk-podium .podium-card--rank1 { margin-top: -8px; padding-top: 10px; }
+  #panel-riwayat .rk-podium .podium-card--rank1 .podium-card__crown { height: 34px; margin-bottom: 2px; }
+  #panel-riwayat .rk-podium .podium-card__crown svg { width: 34px; height: 34px; }
+  #panel-riwayat .rk-podium .podium-card__name { font-size: 12px; }
+  #panel-riwayat .rk-podium .podium-card__score { font-size: 13px; gap: 4px; }
+  #panel-riwayat .rk-podium .rk-gicon { width: 15px; height: 15px; }
+  #panel-riwayat .rk-podium .podium-card__step { margin: 8px -6px 0; }
+  #panel-riwayat .rk-podium .podium-card--rank1 .podium-card__step { height: 40px; font-size: 20px; }
+  #panel-riwayat .rk-podium .podium-card--rank2 .podium-card__step { height: 32px; font-size: 17px; }
+  #panel-riwayat .rk-podium .podium-card--rank3 .podium-card__step { height: 26px; font-size: 15px; }
+  #panel-riwayat .riwayat-rank-list { --pg-h: 42px; --pg-gap: 6px; }
+  #panel-riwayat .rk-row { gap: 8px; padding: 0 12px 0 8px; }
+  #panel-riwayat .rk-badge { width: 26px; height: 26px; font-size: 12px; }
+  #panel-riwayat .rk-avatar { width: 24px; height: 24px; font-size: 11px; }
+  #panel-riwayat .rk-nama { gap: 7px; font-size: 13px; }
+  #panel-riwayat .rk-skor b { font-size: 15px; }
+
+  /* Detail */
+  #riwayat-detail-screen .riwayat-inner { gap: 8px; }
+  #riwayat-detail-screen .riwayat-review-list { height: auto; --pg-h: 40px; --pg-gap: 6px; }
+  #panel-riwayat .rd-bar .riwayat-back-btn { width: 32px; height: 32px; }
+  #panel-riwayat .rd-bar-title { font-size: 13px; }
+  #panel-riwayat .rd-btn { height: 32px; font-size: 11.5px; }
+  #panel-riwayat .rd-btn-del { width: 32px; }
+  #panel-riwayat .rd-hero { gap: 10px; padding: 12px; border-radius: 16px; }
+  #panel-riwayat .rd-medal { width: 38px; height: 38px; border-radius: 12px; }
+  #panel-riwayat .rd-medal svg { width: 20px; height: 20px; }
+  #panel-riwayat .rd-info { gap: 4px; }
+  #panel-riwayat .rd-nama { font-size: 14px; }
+  #panel-riwayat .rd-chip { padding: 1px 8px; font-size: 10px; }
+  #panel-riwayat :is(.rd-tanggal, .rd-meta) { font-size: 10.5px; }
+  #panel-riwayat .rd-ring { width: 76px; height: 76px; }
+  #panel-riwayat .rd-ring-in { width: 60px; height: 60px; }
+  #panel-riwayat .rd-ring-in b { font-size: 22px; }
+  #panel-riwayat .rd-ring-in small { font-size: 8.5px; }
+  #panel-riwayat .rd-stats { gap: 6px; }
+  #panel-riwayat .rd-stat { gap: 6px; padding: 7px 8px; border-radius: 12px; }
+  #panel-riwayat .rd-stat-ico { width: 24px; height: 24px; border-radius: 8px; }
+  #panel-riwayat .rd-stat-ico svg { width: 13px; height: 13px; }
+  #panel-riwayat .rd-stat-txt small { font-size: 8px; letter-spacing: .3px; }
+  #panel-riwayat .rd-stat-txt b { font-size: 15px; }
+  #panel-riwayat .rd-akurasi { font-size: 11px; }
+  #panel-riwayat .rd-section { font-size: 12px; }
+  #panel-riwayat .riwayat-review-item { padding: 0 10px; gap: 8px; font-size: 12px; }
+  #panel-riwayat .riwayat-review-target { font-size: 14px; }
+}
+
+@media (max-width: 420px) {
+  #panel-riwayat :is(.rd-bar-title, .rd-medal) { display: none; }
+  #panel-riwayat .rd-actions { margin-left: auto; }
+}
+
+/* HP pendek */
+@media (max-width: 640px) and (max-height: 640px) {
+  #panel-riwayat .riwayat-sub { display: none; }
+  #panel-riwayat .riwayat-head { margin-bottom: 6px; }
+  #panel-riwayat :is(.rd-meta, .rd-akurasi, .rd-medal) { display: none; }
+}

@@ -1,0 +1,573 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap');
+/* ASTA KANDA — Apple Snake: layar bermain & hasil */
+
+.game-play { position: relative; width: 100%; height: 100%; }
+.game-play-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.game-play-field { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.game-play-canvas-wrap { position: relative; flex: 1; min-height: 0; display: flex; align-items: stretch; justify-content: stretch; overflow: hidden; border: 4px solid #334155; border-radius: 18px; }
+#apple-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 14px; /* = radius luar 18px - tebal stroke 4px, sudut isi & stroke selaras */
+}
+.game-play-stats { display: flex; gap: 8px; flex: 0 0 auto; }
+.game-play-stats .stat-card { flex: 1; }
+
+.game-play-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.game-play-camera-slot { position: relative; flex: 1; min-height: 0; width: 100%; }
+.game-play-camera-slot #left-col { width: 100%; }
+
+.game-play-question {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  text-align: center;
+  padding: 18px 14px 14px;
+  border-radius: 16px;
+}
+.game-play-question-body { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.game-play-question::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--tab-game), var(--tab-belajar));
+}
+.game-play-question-headrow { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.game-play-question-label { font-size: 11.5px; font-weight: 700; letter-spacing: .5px; color: var(--ink-500); text-transform: uppercase; }
+.game-play-question-progress { font-size: 11px; font-weight: 800; color: var(--ink-900); background: rgba(0,0,0,.06); padding: 3px 8px; border-radius: 8px; }
+.game-play-question-target {
+  font-size: clamp(30px, 5vh, 48px);
+  font-weight: 800;
+  color: var(--ink-900);
+  line-height: 1;
+  background: linear-gradient(145deg, #eef4ff, #ffffff);
+  border-radius: 18px;
+  padding: 16px 36px;
+  min-width: 84px;
+  box-shadow: inset 3px 3px 8px var(--shadow-dark), inset -3px -3px 8px var(--shadow-light);
+}
+.game-play-question-feedback { font-size: 13px; font-weight: 800; min-height: 18px; display: flex; align-items: center; gap: 6px; justify-content: center; }
+.game-play-question-feedback svg { width: 16px; height: 16px; }
+.game-play-question-feedback.is-correct { color: var(--tab-belajar); }
+.game-play-question-feedback.is-wrong { color: var(--tab-riwayat); }
+
+.game-play-btn-selesai { flex: 0 0 auto; }
+
+.game-result-unlock {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff3d9, #fffaf0);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+  text-align: center;
+}
+
+
+.game-result-emoji { font-size: 40px; line-height: 1; }
+.game-result-score { padding: 12px 28px; border-radius: 18px; font-size: 32px; font-weight: 800; color: var(--ink-900); }
+.game-result-score-unit { font-size: 13px; font-weight: 700; color: var(--ink-500); margin-left: 6px; }
+
+.game-play-player-badge {
+  position: absolute; left: 20px; bottom: 20px; z-index: 3; /* = 4px border + 16px, sama dengan .camera-status */
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(15,23,42,.78); color: #fff;
+  padding: 5px 12px 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  line-height: 1; backdrop-filter: blur(2px);
+}
+.game-play-player-badge svg { width: 13px; height: 13px; flex: 0 0 auto; }
+.game-play-player-badge svg { width: 13px; height: 13px; }
+
+/* ---------- Header ringkas & tombol saat bermain ---------- */
+.game-play-topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 20px 0; gap: 12px; flex-wrap: wrap; }
+.game-play-brand { display: flex; align-items: center; gap: 14px; }
+.game-play-brand .logo-row { display: flex; align-items: center; }
+.game-play-brand .logo { height: 46px; width: auto; }
+.game-play-brand .tagline { margin: 0; white-space: nowrap; }
+.game-play-actions { display: flex; align-items: center; gap: 8px; }
+.game-play-icon-btn {
+  display: flex; align-items: center; gap: 6px; border: none; cursor: pointer;
+  background: var(--surface); border-radius: 12px; padding: 9px; color: var(--ink-700);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+.game-play-icon-btn svg { width: 17px; height: 17px; }
+.game-play-icon-btn--wide { padding: 9px 14px; font-size: 12.5px; font-weight: 700; }
+.game-play-icon-btn--danger { color: var(--tab-riwayat); }
+
+.game-play-grid { padding: 14px 20px 20px; }
+
+/* ---------- Isi nama pemain ---------- */
+.game-nama-input { width: 100%; border: none; border-radius: 12px; padding: 12px 14px; font-size: 15px; font-weight: 600; color: var(--ink-900); text-align: center; }
+
+/* ---------- Leaderboard ---------- */
+.game-leaderboard-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.game-leaderboard-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: var(--surface); box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); }
+.game-leaderboard-rank { font-weight: 800; color: var(--ink-500); width: 20px; }
+.game-leaderboard-nama { flex: 1; font-weight: 700; color: var(--ink-900); text-align: left; }
+.game-leaderboard-skor { font-weight: 800; color: var(--tab-belajar); }
+.game-leaderboard-empty { font-size: 12.5px; color: var(--ink-500); font-weight: 600; text-align: center; padding: 20px 0; }
+
+/* ---------- Game Over (gaya sesuai referensi) ---------- */
+.game-over-inner {
+  width: 100%; max-width: 340px;
+  display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center;
+  background: #fff; border-radius: 22px; padding: 28px 24px;
+}
+.game-over-title { font-size: 26px; font-weight: 800; color: var(--ink-900); }
+.game-over-score { font-size: 17px; font-weight: 700; color: var(--ink-700); }
+.game-over-btn { width: 100%; border: none; cursor: pointer; border-radius: 16px; padding: 14px; font-size: 15px; font-weight: 800; color: #fff; }
+.game-over-btn--main { background: linear-gradient(145deg, #34d399, #10b981); box-shadow: 0 8px 16px rgba(16,185,129,.35); }
+.game-over-row { display: flex; gap: 10px; width: 100%; }
+.game-over-row .game-over-btn { background: linear-gradient(145deg, #2dd4bf, #14b8a6); font-size: 13.5px; padding: 12px 6px; }
+
+/* ---------- Tagline saat bermain: gaya sama persis dengan header utama ---------- */
+.game-play-brand .tagline {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.75em;
+  margin: 0;
+  padding: 7px 26px;
+  border-radius: 999px;
+  font-family: 'Fredoka', 'Poppins', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-700);
+}
+
+
+/* ---------- Tombol aktif di topbar (Leaderboard) — gaya teal seperti referensi ---------- */
+.game-play-icon-btn--active {
+  background: #2EC4B6; color: #fff;
+  box-shadow: 0 4px 0 #21A193, 4px 8px 14px rgba(163,171,185,.4);
+  cursor: default;
+}
+
+/* ---------- Layar Leaderboard (port dari referensi) ---------- */
+.game-lb { position: relative; width: 100%; height: 100%; align-items: stretch; justify-content: flex-start; }
+.game-lb-body {
+  flex: 1; min-height: 0; margin: 14px 20px 20px; padding: 26px 30px;
+  border-radius: 26px; background: var(--surface);
+  box-shadow: 9px 9px 18px var(--shadow-dark), -9px -9px 18px var(--shadow-light);
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+#game-leaderboard {
+  --ink: var(--ink-900); --ink-soft: #6B7280; --ink-faint: #9AA2AE;
+  --shadow-dark-soft: rgba(163,171,185,.4); --shadow-light-soft: rgba(255,255,255,.75);
+  --wood: #2EC4B6; --wood-dark: #21A193;
+  --gold: #F5B942; --gold-dark: #C98F1F; --silver: #B9C1CC; --silver-dark: #8C97A5; --bronze: #D98E4A; --bronze-dark: #A9662A;
+}
+.leaderboard-screen__subtitle {
+    text-align: center;
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+    font-size: 14px;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    table-layout: fixed;
+}
+.leaderboard-table col.leaderboard-table__col-rank { width: 90px; }
+.leaderboard-table col.leaderboard-table__col-score { width: 130px; }
+.leaderboard-table thead th {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink-soft);
+    text-align: left;
+    padding: 0 18px 6px;
+}
+.leaderboard-table thead th:first-child { text-align: center; }
+.leaderboard-table thead th:last-child { text-align: right; padding-right: 24px; }
+
+.leaderboard-table tbody tr {
+    background: var(--surface);
+    box-shadow: 5px 5px 12px var(--shadow-dark-soft), -5px -5px 12px var(--shadow-light-soft);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.leaderboard-table tbody tr:hover {
+    transform: translateY(-3px);
+    box-shadow: 7px 7px 16px var(--shadow-dark), -7px -7px 16px var(--shadow-light);
+}
+.leaderboard-table tbody td {
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 15px;
+}
+.leaderboard-table tbody td:first-child {
+    border-radius: 16px 0 0 16px;
+    text-align: center;
+}
+.leaderboard-table tbody td:last-child {
+    border-radius: 0 16px 16px 0;
+    text-align: right;
+    padding-right: 24px;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 17px;
+}
+.leaderboard-table tbody td:nth-child(2) {
+    border-radius: 0;
+    vertical-align: middle;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 15.5px;
+}
+
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--ink-soft);
+    background: var(--surface);
+    box-shadow: inset 2px 2px 4px var(--shadow-dark-soft), inset -2px -2px 4px var(--shadow-light-soft);
+}
+
+.leaderboard-row--medal-1 td:first-child .rank-badge,
+.leaderboard-row--medal-2 td:first-child .rank-badge,
+.leaderboard-row--medal-3 td:first-child .rank-badge {
+    font-size: 20px;
+    color: #fff;
+    box-shadow: none;
+}
+.leaderboard-row--medal-1 { transform: scale(1.02); }
+.leaderboard-row--medal-1 td:first-child .rank-badge { background: linear-gradient(135deg, #FFE29A, var(--gold)); box-shadow: 0 3px 0 var(--gold-dark), 0 0 0 4px rgba(245,185,66,.22); }
+.leaderboard-row--medal-2 td:first-child .rank-badge { background: linear-gradient(135deg, #E4E9EF, var(--silver)); box-shadow: 0 3px 0 var(--silver-dark); }
+.leaderboard-row--medal-3 td:first-child .rank-badge { background: linear-gradient(135deg, #F0BC8D, var(--bronze)); box-shadow: 0 3px 0 var(--bronze-dark); }
+
+.leaderboard-row--medal-1 td:nth-child(2) { font-family: 'Baloo 2', sans-serif; font-size: 17px; }
+
+.leaderboard-empty { text-align: center; color: var(--ink-soft); padding: 40px 0; font-weight: 600; }
+
+/* ---------- Leaderboard: sentuhan visual tambahan biar lebih menarik ---------- */
+/* Judul kini berupa pill/banner solid dengan teks PUTIH (bukan lagi gradient
+   text-clip). Karena background-clip:text tidak lagi dipakai, emoji trofi
+   tampil dengan warna aslinya sendiri (tidak lagi ikut ter-tint oranye). */
+.leaderboard-screen__title {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: fit-content;
+    margin: 0 auto 4px;
+    color: var(--ink);
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    animation: leaderboardTitlePop .45s ease;
+}
+.leaderboard-screen__trophy {
+    font-size: 26px;
+    line-height: 1;
+}
+@keyframes leaderboardTitlePop {
+    from { opacity: 0; transform: translateY(-6px) scale(.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.leaderboard-table {
+    animation: leaderboardFadeIn .35s ease;
+}
+@keyframes leaderboardFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* tint warna lembut di baris medali, tanpa mengganggu animasi/transform yang sudah ada */
+.leaderboard-row--medal-1 { background: linear-gradient(90deg, rgba(255, 226, 154, .4), rgba(255, 255, 255, 0) 75%); }
+.leaderboard-row--medal-2 { background: linear-gradient(90deg, rgba(228, 233, 239, .45), rgba(255, 255, 255, 0) 75%); }
+.leaderboard-row--medal-3 { background: linear-gradient(90deg, rgba(240, 188, 141, .4), rgba(255, 255, 255, 0) 75%); }
+
+/* glow keemasan yang berdenyut pelan khusus peringkat 1, biar lebih "juara" */
+.leaderboard-row--medal-1 td:first-child,
+.leaderboard-row--medal-1 td:last-child {
+    animation: leaderboardGoldPulse 2.4s ease-in-out infinite;
+}
+@keyframes leaderboardGoldPulse {
+    0%, 100% { text-shadow: 0 0 0 rgba(245, 185, 66, 0); }
+    50% { text-shadow: 0 0 10px rgba(245, 185, 66, .55); }
+}
+
+
+/* ---------- Leaderboard: podium 3 besar & animasi baris bertahap ---------- */
+.leaderboard-podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
+    margin: 4px 0 26px;
+}
+.podium-card {
+    flex: 0 1 160px;
+    min-width: 0;
+    border-radius: 20px;
+    padding: 20px 12px 0;
+    text-align: center;
+    background: var(--surface);
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+    animation: podiumRise .5s cubic-bezier(.34, 1.56, .64, 1) both;
+    position: relative;
+    overflow: hidden;
+}
+/* kilau lembut yang menyapu khusus podium juara 1, kesan "paling istimewa" */
+.podium-card--rank1::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, .5) 50%, transparent 70%);
+    background-size: 220% 220%;
+    animation: podiumShine 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes podiumShine {
+    0% { background-position: 130% 0; }
+    100% { background-position: -30% 0; }
+}
+.podium-card__crown {
+    font-size: 22px;
+    line-height: 1;
+    height: 22px;
+    margin-bottom: 2px;
+    visibility: hidden;
+}
+.podium-card--rank1 .podium-card__crown {
+    visibility: visible;
+    font-size: 58px;
+    height: 62px;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.2));
+    animation: crownFloat 2.2s ease-in-out infinite;
+}
+@keyframes crownFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+.podium-card--rank1 { order: 2; margin-top: -14px; padding-top: 24px; z-index: 2; animation-delay: .05s; }
+.podium-card--rank2 { order: 1; animation-delay: .15s; }
+.podium-card--rank3 { order: 3; animation-delay: .25s; }
+@keyframes podiumRise {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.podium-card__medal {
+    font-size: 32px;
+    line-height: 1;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,.15));
+}
+.podium-card__name {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.podium-card__score {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 15.5px;
+    color: var(--gold-dark);
+}
+.podium-card__step {
+    margin: 16px -12px 0;
+    padding-top: 4px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, .18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.podium-card--rank1 .podium-card__step {
+    height: 68px;
+    font-size: 30px;
+    background: linear-gradient(160deg, #FFE29A, var(--gold));
+}
+.podium-card--rank2 .podium-card__step {
+    height: 52px;
+    font-size: 24px;
+    background: linear-gradient(160deg, #E4E9EF, var(--silver));
+}
+.podium-card--rank3 .podium-card__step {
+    height: 40px;
+    font-size: 22px;
+    background: linear-gradient(160deg, #F0BC8D, var(--bronze));
+}
+@media (max-width: 560px) {
+    .leaderboard-podium { gap: 8px; }
+    .podium-card { padding: 16px 8px 0; }
+    .podium-card--rank1 .podium-card__step { height: 54px; font-size: 24px; }
+    .podium-card--rank2 .podium-card__step { height: 42px; font-size: 19px; }
+    .podium-card--rank3 .podium-card__step { height: 34px; font-size: 18px; }
+}
+
+/* ---------- Leaderboard: daftar ringkas peringkat 4–5 di bawah podium ---------- */
+.leaderboard-others[hidden] { display: none; }
+.leaderboard-others__label {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+    text-align: center;
+}
+.rank-badge--plain {
+    background: var(--surface);
+    box-shadow: inset 2px 2px 4px var(--shadow-dark-soft), inset -2px -2px 4px var(--shadow-light-soft);
+    color: var(--ink-soft);
+}
+.leaderboard-table__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    margin-right: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, var(--wood), var(--wood-dark));
+    vertical-align: middle;
+}
+
+/* setiap baris leaderboard muncul bertahap (staggered fade-in) saat data
+   selesai dimuat; delay per baris diatur lewat inline style di main.js */
+.leaderboard-table tbody tr {
+    animation: leaderboardRowIn .32s ease both;
+}
+@keyframes leaderboardRowIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- Kilat Benar / Salah ---------- */
+.is-flash-ok  { animation: appleFlashOk .65s ease-out; }
+.is-flash-bad { animation: appleFlashBad .65s ease-out; }
+@keyframes appleFlashOk {
+  from { outline: 4px solid rgba(16,185,129,.95); outline-offset: -4px; }
+  to   { outline: 4px solid rgba(16,185,129,0);   outline-offset: -4px; }
+}
+@keyframes appleFlashBad {
+  from { outline: 4px solid rgba(244,63,94,.95); outline-offset: -4px; }
+  to   { outline: 4px solid rgba(244,63,94,0);   outline-offset: -4px; }
+}
+
+/* ---------- Pop up Game Over: ikon pengganti emoji ---------- */
+.game-over-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.game-over-btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.game-over-score { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.game-over-score-ico { display: inline-flex; color: #ef4444; }
+.game-over-score-ico svg { width: 20px; height: 20px; }
+.game-result-unlock svg { width: 15px; height: 15px; vertical-align: -2px; }
+
+/* ---------- Pop up konfirmasi Keluar ---------- */
+.apple-confirm {
+  position: fixed; inset: 0; z-index: 3000;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(15,23,42,.45); backdrop-filter: blur(3px);
+}
+.apple-confirm.hidden { display: none; }
+.apple-confirm-card {
+  width: 100%; max-width: 340px; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  background: #fff; border-radius: 22px; padding: 26px 22px 20px;
+  box-shadow: 0 18px 40px rgba(15,23,42,.28);
+  animation: appleConfirmIn .18s ease-out;
+}
+.apple-confirm-ico {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(244,63,94,.12); color: #f43f5e;
+}
+.apple-confirm-ico svg { width: 26px; height: 26px; }
+.apple-confirm-title { font-size: 18px; font-weight: 800; color: #1f2937; }
+.apple-confirm-text { margin: 0; font-size: 13px; line-height: 1.45; font-weight: 500; color: #6b7280; }
+.apple-confirm-actions { display: flex; gap: 10px; width: 100%; margin-top: 8px; }
+.apple-confirm-btn { flex: 1; border: none; cursor: pointer; border-radius: 14px; padding: 12px 8px; font: inherit; font-size: 14px; font-weight: 800; }
+.apple-confirm-btn--ghost  { background: #eef1f5; color: #374151; }
+.apple-confirm-btn--danger { background: linear-gradient(145deg, #fb7185, #f43f5e); color: #fff; box-shadow: 0 8px 16px rgba(244,63,94,.32); }
+@keyframes appleConfirmIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+
+/* ---------- Game Over: kartu statistik Skor · Waktu · Benar · Salah ---------- */
+.apple-stats.apple-stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin: 4px 0 0;
+}
+.apple-stat {
+  --st-color: #475569; --st-bg: #f8fafc; --st-line: rgba(148,163,184,.35); --st-ico: rgba(148,163,184,.18);
+  min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 12px 6px 10px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--st-bg), #fff);
+  box-shadow: inset 0 0 0 1.5px var(--st-line);
+}
+.apple-stat--skor  { --st-color: #d97706; --st-bg: #fff6df; --st-line: rgba(245,158,11,.38); --st-ico: rgba(245,158,11,.18); }
+.apple-stat--waktu { --st-color: #2563eb; --st-bg: #e9f1ff; --st-line: rgba(59,130,246,.34); --st-ico: rgba(59,130,246,.16); }
+.apple-stat--benar { --st-color: #059669; --st-bg: #e6f8f0; --st-line: rgba(16,185,129,.38); --st-ico: rgba(16,185,129,.18); }
+.apple-stat--salah { --st-color: #e11d48; --st-bg: #ffe9ee; --st-line: rgba(244,63,94,.36); --st-ico: rgba(244,63,94,.16); }
+.apple-stat-ico {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--st-ico); color: var(--st-color);
+}
+.apple-stat-ico svg { width: 16px; height: 16px; }
+.apple-stat-val {
+  font-size: 24px; font-weight: 800; line-height: 1.05; white-space: nowrap;
+  color: var(--st-color); font-variant-numeric: tabular-nums;
+}
+.apple-stat-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; }
+@media (max-width: 460px) {
+  .apple-stats.apple-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .apple-stat { padding: 10px 6px 8px; }
+  .apple-stat-val { font-size: 21px; }
+}
+
+/* ---------- Kamera: tinggi ikut ruang kolom (pasti terlihat), info deteksi disembunyikan ---------- */
+.game-play-camera-slot { position: relative; width: 100%; flex: 1 1 0; min-height: 0; aspect-ratio: auto; border-radius: 18px; }
+.game-play-camera-slot #left-col { display: flex; flex-direction: column; width: 100%; height: 100%; gap: 0; }
+.game-play-camera-slot #left-col .camera-panel { flex: 1 1 0; min-height: 0; height: 100% !important; padding-bottom: 0 !important; }
+.game-play-camera-slot #left-col .info-panel { display: none !important; }
+
+/* Tombol Keluar di pop up Game Over: merah */
+.game-over-row #apple-btn-ganti-pemain {
+  background: linear-gradient(145deg, #fb7185, #f43f5e);
+  box-shadow: 0 8px 16px rgba(244,63,94,.32);
+}

@@ -1,0 +1,237 @@
+/* =====================================================================
+   ASTA KANDA — laddersresponsive.css
+   Letakkan di: public/assets-astakanda/game/ladders/laddersresponsive.css
+   Muat SETELAH ladders.css (dan setelah apple.css, appleresponsive.css,
+   dinoresponsive.css, gameresponsive.css) di index.blade.php.
+   Hanya mengatur layar BERMAIN Snakes & Ladders (#game-ladders-play) di
+   tablet & HP (<= 1024px). Desktop (> 1024px) tidak diubah.
+
+   Susunan dari atas ke bawah, semuanya dalam 1 layar tanpa scroll:
+     1. Header (logo + tagline, lalu tombol Atur / Keluar)
+     2. Kamera
+     3. Kartu soal / giliran (padat: nama, huruf, info deteksi, petunjuk, tombol)
+     4. Arena permainan (rasio 6:5 = rasio papan)
+     5. Keterangan pemain (paling bawah)
+   HP landscape pendek memakai 2 kolom (lihat bagian paling bawah).
+   ===================================================================== */
+
+@media (max-width: 1024px) {
+
+  /* ---------- Layar bermain (overlay layar penuh): tanpa scroll ---------- */
+  #game-ladders-play {
+    height: 100dvh;
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+
+  /* ---------- 1. Header ---------- */
+  #game-ladders-play .game-play-topbar {
+    flex: 0 0 auto;
+    padding: 10px 12px 0;
+    gap: 8px 10px;
+  }
+  #game-ladders-play .game-play-brand { flex: 1 1 auto; min-width: 0; gap: 10px; }
+  #game-ladders-play .game-play-brand .logo { height: clamp(30px, 5.5dvh, 44px); }
+  #game-ladders-play .game-play-brand .tagline {
+    min-width: 0;
+    padding: 5px clamp(10px, 3vw, 22px);
+    font-size: clamp(9px, 2.4vw, 15px);
+    letter-spacing: .1em;
+    gap: .6em;
+  }
+  #game-ladders-play .game-play-actions { flex: 0 0 auto; gap: 8px; }
+  #game-ladders-play .game-play-icon-btn--wide { padding: 8px 14px; font-size: 12.5px; justify-content: center; }
+
+  /* ---------- Grid isi: baris 1 = kamera + soal (mengisi sisa), baris 2 = arena + pemain ---------- */
+  #game-ladders-play .game-play-grid {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    height: auto;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 10px 12px 12px;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  /* ---------- 2. Kamera (sisa tinggi) ---------- */
+  #game-ladders-play .game-play-side {
+    order: -1;                      /* tampil di atas arena */
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+  }
+  #game-ladders-play .game-play-camera-slot {
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+    min-height: 64px;
+    height: auto;
+    aspect-ratio: auto;
+  }
+  /* label pemain di kamera diperkecil agar tidak menutupi wajah */
+  #game-ladders-play .ladders-cam-badge {
+    left: 10px; bottom: 10px;
+    max-width: calc(100% - 20px);
+    gap: 7px;
+    padding: 3px 12px 3px 3px;
+  }
+  #game-ladders-play .ladders-cam-ico { width: 22px; height: 22px; }
+  #game-ladders-play .ladders-cam-ico svg { width: 13px; height: 13px; }
+  #game-ladders-play .ladders-cam-txt small { font-size: 8px; letter-spacing: 1px; }
+  #game-ladders-play .ladders-cam-txt b { font-size: 12px; }
+
+  /* ---------- 3. Kartu soal / giliran: dipadatkan jadi 2 kolom ---------- */
+  #game-ladders-play .game-play-question {
+    flex: 0 0 auto;                 /* tinggi mengikuti isi */
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    gap: 4px;
+    padding: 12px 12px 8px;
+  }
+  #game-ladders-play .game-play-question-headrow { margin-bottom: 0; }
+  #game-ladders-play .game-play-question-label { font-size: 10.5px; }
+  #game-ladders-play .game-play-question-progress { font-size: 10.5px; padding: 2px 7px; }
+
+  #game-ladders-play .ladders-turn .game-play-question-body {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "name     detect"
+      "target   hint"
+      "feedback skip";
+    align-items: center;
+    justify-items: stretch;
+    gap: 4px 10px;
+  }
+  #game-ladders-play .ladders-turn-name      { grid-area: name;     justify-self: start; font-size: 13px; gap: 6px; min-width: 0; }
+  #game-ladders-play .ladders-turn-dot       { width: 12px; height: 12px; }
+  #game-ladders-play .ladders-detect         { grid-area: detect;   font-size: 11px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #game-ladders-play .ladders-turn .game-play-question-target {
+    grid-area: target;
+    justify-self: center;
+    font-size: clamp(22px, 4dvh, 34px);
+    padding: clamp(5px, 1dvh, 10px) clamp(16px, 5vw, 26px);
+    min-width: 0;
+    border-radius: 14px;
+  }
+  #game-ladders-play .ladders-hint           { grid-area: hint; padding: 6px 8px; gap: 8px; font-size: 11px; border-radius: 12px; }
+  #game-ladders-play .ladders-hint-ico       { width: 22px; height: 22px; }
+  #game-ladders-play .ladders-hint-ico svg   { width: 13px; height: 13px; }
+  #game-ladders-play .game-play-question-feedback { grid-area: feedback; justify-self: center; font-size: 11px; min-height: 0; }
+  #game-ladders-play .ladders-btn-lewati     { grid-area: skip; width: 100%; padding: 6px 8px; font-size: 11.5px; gap: 5px; }
+  #game-ladders-play .ladders-btn-lewati svg { width: 13px; height: 13px; }
+
+  /* ---------- 4. Arena (rasio papan 6:5) + 5. Keterangan pemain ----------
+     Lebar arena & baris pemain sama (--arena-w): penuh, tetapi dibatasi agar
+     kamera (min. 64px) dan kartu soal (~140px) selalu tetap muat. Minimal
+     264px karena papan di ladders.js butuh sel >= 20px. */
+  #game-ladders-play .game-play-field {
+    --arena-w: min(100%, max(264px, calc((100dvh - 404px) * 1.2)));
+    gap: 8px;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-end;      /* arena + pemain menempel di paling bawah */
+  }
+  #game-ladders-play .game-play-canvas-wrap {
+    flex: 0 0 auto;
+    width: var(--arena-w);
+    aspect-ratio: 6 / 5;
+    min-height: 0;
+  }
+  #game-ladders-play .ladders-players { width: var(--arena-w); gap: 8px; }
+  #game-ladders-play .ladders-player { padding: 6px 8px; gap: 6px; }
+  #game-ladders-play .ladders-player-dot { width: 14px; height: 14px; }
+  #game-ladders-play .ladders-player-info b,
+  #game-ladders-play .ladders-player-info small {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #game-ladders-play .ladders-player-info b { font-size: 12px; }
+  #game-ladders-play .ladders-player-info small { font-size: 10.5px; }
+}
+
+
+/* ---------- HP (<= 640px): header 2 baris, rapi & rata tengah ---------- */
+@media (max-width: 640px) {
+  #game-ladders-play .game-play-topbar { padding: 8px 10px 0; }
+  #game-ladders-play .game-play-brand { flex-basis: 100%; justify-content: center; }
+  #game-ladders-play .game-play-actions { flex-basis: 100%; }
+  #game-ladders-play .game-play-icon-btn--wide { flex: 1 1 0; }   /* Atur & Keluar sama lebar */
+  #game-ladders-play .game-play-grid { padding: 8px 10px 10px; gap: 8px; }
+}
+
+
+/* ---------- HP / tablet LANDSCAPE pendek: 2 kolom (kamera+soal | arena+pemain) ---------- */
+@media (max-width: 1024px) and (max-height: 520px) and (orientation: landscape) {
+  #game-ladders-play .game-play-brand { flex-basis: auto; justify-content: flex-start; }
+  #game-ladders-play .game-play-actions { flex-basis: auto; }
+  #game-ladders-play .game-play-icon-btn--wide { flex: 0 0 auto; }
+  #game-ladders-play .game-play-grid {
+    max-width: none;
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  #game-ladders-play .game-play-side { order: 0; }
+  #game-ladders-play .game-play-field { --arena-w: 100%; justify-content: center; }
+  #game-ladders-play .game-play-canvas-wrap { flex: 1 1 0; aspect-ratio: auto; }  /* papan dipusatkan otomatis oleh ladders.js */
+}
+
+/* shortcut: layar HP portrait lebih pendek dari ~560px: arena dikunci min. 264px lebar sehingga kamera mengecil ke 64px & bagian bawah bisa terpotong; upgrade bila perlu mode ringkas khusus layar sangat pendek */
+
+/* =====================================================================
+   HP (<= 640px): LAYAR "CARA BERMAIN" & "ATUR PERMAINAN" SNAKES LADDERS
+   TEPAT DI TENGAH. Tombol back tetap di pojok kiri atas.
+   ===================================================================== */
+@media (max-width: 640px) {
+
+  /* Layar mengisi tinggi panel, isi rata tengah (vertikal & horizontal) */
+  .app-shell .main-grid #panel-game :is(#game-ladders-detail, #game-ladders-setup) {
+    flex: 1 1 0;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    max-width: 100%;
+    padding: 40px 0;               /* simetris; ruang aman untuk tombol back */
+    box-sizing: border-box;
+  }
+
+  /* Tombol back tetap di pojok kiri atas */
+  #game-ladders-detail .game-back-btn,
+  #game-ladders-setup .game-back-btn { top: 0; left: 0; }
+
+  /* Isi selebar layar agar lebih jelas terlihat */
+  #game-ladders-detail .game-detail-body,
+  #game-ladders-setup .game-setup-inner { width: 100%; }
+
+  /* Cara Bermain */
+  #game-ladders-detail .game-detail-img { width: clamp(52px, 10dvh, 84px); height: clamp(52px, 10dvh, 84px); }
+  #game-ladders-detail .game-detail-name { font-size: 18px; }
+  #game-ladders-detail .game-howto { max-width: 100%; padding: 12px 14px; }
+  #game-ladders-detail .game-howto-title { font-size: 12px; }
+  #game-ladders-detail .game-howto-list li { font-size: 12px; line-height: 1.4; }
+  #game-ladders-detail .game-btn-mulai { padding: 11px 32px; font-size: 14.5px; }
+
+  /* Atur Permainan */
+  #game-ladders-setup .game-setup-title { font-size: 18px; }
+  #game-ladders-setup .game-setup-label { font-size: 12px; }
+  #game-ladders-setup .ladders-name input { font-size: 13px; }
+}
+
+/* HP: 3 tombol di header (Atur, Leaderboard, Keluar) dipadatkan agar muat 1 baris */
+@media (max-width: 640px) {
+  #game-ladders-play .game-play-icon-btn--wide { padding: 8px 6px; font-size: 11.5px; gap: 4px; }
+  #game-ladders-play .game-play-icon-btn--wide svg { width: 15px; height: 15px; }
+}
