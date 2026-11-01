@@ -11,7 +11,25 @@
   <link rel="preload" as="image" href="{{ asset('assets/images/dino.png') }}">
   <link rel="preload" as="image" href="{{ asset('assets/images/ladders.png') }}">
   <link rel="preload" as="image" href="{{ asset('assets/images/hornet.png') }}">
+  <link rel="preload" as="image" href="{{ asset('assets/images/applescore.png') }}">
+  <link rel="preload" as="image" href="{{ asset('assets/images/dinoscore.png') }}">
+  <link rel="preload" as="image" href="{{ asset('assets/images/laddersscore.png') }}">
+  <link rel="preload" as="image" href="{{ asset('assets/images/hornetscore.png') }}">
+  <script>
+    /* Pemanasan: unduh dan dekode semua ikon Pilih Game sejak halaman dibuka, supaya tampil tanpa jeda */
+    window.__astaWarm = [
+      'apple', 'dino', 'ladders', 'hornet', 'applescore', 'dinoscore', 'laddersscore', 'hornetscore'
+    ].map(function (n) {
+      var i = new Image();
+      i.src = "{{ asset('assets/images') }}/" + n + ".png";
+      if (i.decode) i.decode().catch(function () {});
+      return i;   // referensi disimpan agar tidak dibuang dari cache
+    });
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preload" as="image" href="{{ asset('assets/images/logo.png') }}" fetchpriority="high">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/css/style.css') }}">
@@ -36,7 +54,7 @@
     <!-- ================= HEADER ================= -->
     <header class="app-header">
       <div class="logo-row">
-        <img class="logo" src="{{ asset('assets/images/logo.png') }}" alt="ASTA KANDA">
+        <img class="logo" src="{{ asset('assets/images/logo.png') }}" alt="ASTA KANDA" width="1408" height="768" fetchpriority="high" decoding="async">
       </div>
       <p id="tagline" class="subtitle tagline neu-raised" aria-label="Belajar Bahasa Isyarat dan Bermain">BELAJAR BAHASA ISYARAT & BERMAIN</p>
     </header>
@@ -322,9 +340,9 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script>
     // Path gambar untuk tampilan "kosong"/"tidak ditemukan" (dipakai app.js & ujian.js),
     // serta logo game (dipakai game.js)
@@ -334,25 +352,29 @@
       apple: "{{ asset('assets/images/apple.png') }}",
       dino: "{{ asset('assets/images/dino.png') }}",
       ladders: "{{ asset('assets/images/ladders.png') }}",
-      hornet: "{{ asset('assets/images/hornet.png') }}"
+      hornet: "{{ asset('assets/images/hornet.png') }}",
+      applescore: "{{ asset('assets/images/applescore.png') }}",
+      dinoscore: "{{ asset('assets/images/dinoscore.png') }}",
+      laddersscore: "{{ asset('assets/images/laddersscore.png') }}",
+      hornetscore: "{{ asset('assets/images/hornetscore.png') }}"
     };
   </script>
-  <script src="{{ asset('assets-astakanda/js/app.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/ujian/ujian.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/sound.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/sertifikat.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/hasil.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/apple/apple.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/dino/dino.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/game.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/game/ladders/ladders.js') }}"></script>
-  <script src="{{ asset('assets-astakanda/history/riwayat.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/js/app.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/ujian/ujian.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/sound.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/sertifikat.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/hasil.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/apple/apple.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/dino/dino.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/game.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/ladders/ladders.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/history/riwayat.js') }}"></script>
   <script type="importmap">
   { "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
   } }
   </script>
-  <script src="{{ asset('assets-astakanda/game/hunter/hunter-ui.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/hunter/hunter-ui.js') }}"></script>
 </body>
 </html>

@@ -70,7 +70,7 @@
     // Tab bar disembunyikan di semua layar Apple Snake selain "Pilih Game".
     // Header utama (logo + tagline) tetap tampil di semua layar KECUALI saat
     // benar-benar Bermain (layar itu sudah punya topbar ringkas sendiri).
-    if (tabBar) tabBar.classList.toggle('hidden', el !== screenSelect);
+    if (tabBar) tabBar.classList.toggle('hidden', el !== screenSelect && el !== screenDetail && el !== screenSetup && el !== screenDinoSetup);   // tab bar + toggle tema tampil di Cara Bermain dan Atur Permainan
     if (appHeader) appHeader.classList.toggle('hidden', el === screenPlayEl || el === screenLeaderboard || el === screenDinoPlay || el === screenDinoLeaderboard);
     // Logo + tagline dipindah ke topbar layar Bermain / Leaderboard, dan
     // dikembalikan ke header utama di layar lain (mis. Game Over -> Ganti Pemain).
@@ -117,6 +117,46 @@
     modalKeluar.classList.remove('hidden');
     modalKeluar.querySelector('[data-aksi="batal"]').focus();
   }
+
+  // Pop up peringatan 1 tombol (markup & kelas sama dengan pop up konfirmasi Keluar). Dipakai semua game lewat window.AstaKandaNamaWajib
+  let modalWarn = null, warnCb = null;
+  function peringatan(judul, teks, onTutup) {
+    if (!modalWarn) {
+      modalWarn = document.createElement('div');
+      modalWarn.className = 'apple-confirm hidden';
+      modalWarn.setAttribute('role', 'alertdialog');
+      modalWarn.setAttribute('aria-modal', 'true');
+      modalWarn.innerHTML =
+        '<div class="apple-confirm-card">' +
+          '<div class="apple-confirm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>' +
+          '<div class="apple-confirm-title" data-w="judul"></div>' +
+          '<p class="apple-confirm-text" data-w="teks"></p>' +
+          '<div class="apple-confirm-actions">' +
+            '<button type="button" class="apple-confirm-btn apple-confirm-btn--danger" data-aksi="ok">Mengerti</button>' +
+          '</div>' +
+        '</div>';
+      const tutup = () => {
+        if (modalWarn.classList.contains('hidden')) return;
+        modalWarn.classList.add('hidden');
+        const cb = warnCb; warnCb = null;
+        if (cb) cb();
+      };
+      modalWarn.addEventListener('click', (e) => { if (e.target === modalWarn || e.target.closest('[data-aksi]')) tutup(); });   // tombol atau klik di luar kartu
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutup(); });
+      document.body.appendChild(modalWarn);
+    }
+    modalWarn.querySelector('[data-w="judul"]').textContent = judul;
+    modalWarn.querySelector('[data-w="teks"]').textContent = teks;
+    warnCb = onTutup || null;
+    modalWarn.classList.remove('hidden');
+    modalWarn.querySelector('[data-aksi="ok"]').focus();
+  }
+  function namaWajib(input, teks) {
+    if (input) input.classList.add('is-invalid');
+    peringatan('Nama pemain belum diisi', teks || 'Isi nama pemain terlebih dahulu sebelum mulai bermain.', () => { if (input) input.focus(); });
+  }
+  window.AstaKandaNamaWajib = namaWajib;
+  document.addEventListener('input', (e) => { if (e.target.classList) e.target.classList.remove('is-invalid'); });
 
   function showDetail(key) {
     selectedGame = key;
@@ -218,7 +258,7 @@
   btnMulaiMain.addEventListener('click', () => {
     const registry = window.AstaKandaGames || {};
     const nama = inputNamaSetup.value.trim();
-    if (!nama) { inputNamaSetup.classList.add('is-invalid'); inputNamaSetup.focus(); return; }
+    if (!nama) { namaWajib(inputNamaSetup); return; }
     localStorage.setItem('astakanda_player_nama', nama);
     const game = registry.apple;
     if (game && typeof game.start === 'function') {
@@ -425,7 +465,7 @@
   document.addEventListener('input', (e) => { if (e.target.id === 'dino-nama-input') e.target.classList.remove('is-invalid'); });
   document.getElementById('dino-btn-mulai-main').addEventListener('click', () => {
     const inp = document.getElementById('dino-nama-input'); // dibuat oleh dino.js
-    if (inp && !inp.value.trim()) { inp.classList.add('is-invalid'); inp.focus(); return; }
+    if (inp && !inp.value.trim()) { namaWajib(inp); return; }
     const game = (window.AstaKandaGames || {}).dino;
     if (game && typeof game.start === 'function') game.start({ kesulitan: dinoDiff, kategori: dinoKategori });
     else dinoSetupNote.classList.remove('hidden');
@@ -494,12 +534,27 @@
     // Ladders belum menyimpan skor (tidak ada leaderboard), jadi Best Score-nya tetap kosong
     // Hornet Hunter menyimpan Best Score di browser (localStorage), tanpa server
     hunter:  { desc: 'Tembak hornet dengan gestur sebelum waktu habis. Makin tinggi gelombang, makin besar poinnya. Bisa battle 2 pemain!', rekor: null, local: 'astakanda.hunterBest' },
-    ladders: { desc: 'Lempar dadu, jawab gestur dengan benar untuk naik tangga dan hindari ular sampai garis finis.', rekor: null },
+    ladders: { desc: 'Lempar dadu, jawab gestur dengan benar untuk naik tangga dan hindari ular sampai garis finish.', rekor: null },
   };
 
   const SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
   const ICON_TROPHY = SVG + '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+  const ICON_CROWN = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 46 4 18l14 12 14-20 14 20 14-12-4 28z" fill="#FFC83D" stroke="#C98F1F" stroke-width="2.5" stroke-linejoin="round"/><rect x="8" y="46" width="48" height="8" rx="3" fill="#F5B942" stroke="#C98F1F" stroke-width="2.5"/><circle cx="32" cy="38" r="4" fill="#3B82F6"/><circle cx="19" cy="40" r="3" fill="#EF4444"/><circle cx="45" cy="40" r="3" fill="#EF4444"/></svg>';
   const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+
+  // Ikon skor bergaya crown (emas bergradien + outline emas tua + permata biru/merah), tampil di kiri angka Best Score
+  if (!document.getElementById('gcIcoDefs')) {
+    document.body.insertAdjacentHTML('beforeend', '<svg id="gcIcoDefs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gcGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD66B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs></svg>');
+  }
+  // Ikon Best Score = gambar PNG. shortcut: path absolut dari root web, ubah IMG_DIR bila aplikasi ada di subfolder
+  const IMG_DIR = '/assets/images/';
+  const AI = window.ASTA_IMAGES || {};
+  const SKOR_ICON = {
+    apple:   AI.applescore   || IMG_DIR + 'applescore.png',
+    dino:    AI.dinoscore    || IMG_DIR + 'dinoscore.png',
+    ladders: AI.laddersscore || IMG_DIR + 'laddersscore.png',
+    hunter:  AI.hornetscore  || IMG_DIR + 'hornetscore.png'
+  };
   const ICON_USER = SVG + '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
   const MAX_PER_PAGE = 5, MIN_W = 220, GAP_X = 20, MIN_H = 122, GAP_Y = 10;
@@ -553,12 +608,15 @@
     foot.className = 'game-card-foot';
     foot.innerHTML =
       '<span class="game-card-rekor">' +
-        '<span class="gc-trophy">' + ICON_TROPHY + '</span>' +
-        '<span class="gc-rk-txt"><span class="gc-rk-label">BEST SCORE</span>' +
+        '<span class="gc-trophy">' + ICON_CROWN + '</span>' +
+        '<span class="gc-rk-txt"><span class="gc-rk-label">SKOR TERBAIK</span>' +
         '<span class="gc-rk-who"><span class="gc-avatar">' + ICON_USER + '</span><span class="gc-name">Belum ada</span></span></span>' +
-        '<span class="gc-rk-val">–</span>' +
+        '<span class="gc-rk-skor">' +
+          '<span class="gc-rk-ico">' + (SKOR_ICON[key] ? '<img src="' + SKOR_ICON[key] + '" alt="" draggable="false" decoding="sync" loading="eager" fetchpriority="high">' : '') + '</span>' +
+          '<span class="gc-rk-val">–</span>' +
+        '</span>' +
       '</span>' +
-      '<span class="game-card-play" aria-hidden="true">' + ICON_PLAY + '<span>Play</span></span>';
+      '<span class="game-card-play" aria-hidden="true">' + ICON_PLAY + '<span>Mainkan</span></span>';
     info.append(desc, foot);
     applyBest(card);
 
@@ -683,4 +741,44 @@
     sx = null;
     if (Math.abs(dx) > 50) go(page + (dx < 0 ? 1 : -1), true);
   }, { passive: true });
+  
+  // ---- Klik: tombol Play -> Cara Bermain (alur lama); bagian kartu lain -> popup kartu penuh ----
+  let pop = null;
+  function closePop() { if (pop) { pop.remove(); pop = null; } }
+  function openPop(card) {
+    closePop();
+    const c = card.cloneNode(true);   // kartu yang sama persis, nilai Skor Terbaik terkini
+    c.removeAttribute('id');          // hindari id ganda
+    c.removeAttribute('data-game');
+    c.tabIndex = -1;
+    // Tombol tutup ✕ merah di pojok kanan atas
+    const x = document.createElement('span');
+    x.className = 'gc-pop-x';
+    x.setAttribute('role', 'button');
+    x.setAttribute('aria-label', 'Tutup');
+    x.tabIndex = 0;
+    x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    x.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closePop(); } });
+    c.append(x);
+    pop = document.createElement('div');
+    pop.className = 'gc-pop';
+    pop.append(c);
+    pop.addEventListener('click', (e) => {
+      if (e.target.closest('.gc-pop-x')) { closePop(); return; }
+      if (e.target.closest('.game-card-play')) {
+        closePop();
+        const play = card.querySelector('.game-card-play');
+        if (play) play.click();       // jalankan alur Play kartu aslinya
+      } else if (!c.contains(e.target)) closePop();   // klik di luar kartu = tutup
+    });
+    screen.append(pop);
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePop(); });
+  // Fase capture: berjalan sebelum handler lama tiap kartu (termasuk kartu dari ladders.js / hunter)
+  wrap.addEventListener('click', (e) => {
+    const card = e.target.closest('.game-card');
+    if (!card || e.target.closest('.game-card-play')) return;   // klik Play: biarkan alur lama
+    e.stopPropagation();
+    openPop(card);
+  }, true);
 })();

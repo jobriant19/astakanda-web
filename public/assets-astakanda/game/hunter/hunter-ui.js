@@ -15,6 +15,8 @@
   const SV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
   const ICON = {
     back: SV + '><path d="m15 18-6-6 6-6"/></svg>',
+    gear: SV + '><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+    trophy: SV + '><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
     atur: SV + '><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.8.7-5.1 4.6 1.5 6.7L12 16.9 5.9 20.3l1.5-6.7L2.3 9l6.8-.7z"/></svg>',
@@ -78,13 +80,13 @@
         '<img class="game-detail-img" src="' + HORNET_IMG + '" alt="">' +
         '<div class="game-detail-name">Hornet Hunter</div>' +
         '<div class="game-howto"><div class="game-howto-title">CARA BERMAIN</div><ul class="game-howto-list">' +
-          '<li>🖐️ Peragakan gestur huruf/kata yang tampil di atas hornet yang menyala.</li>' +
-          '<li>✅ Gestur <b>benar</b> = blaster menembak hornet itu otomatis.</li>' +
-          '<li>❌ Gestur <b>salah</b> atau waktu habis = hornet menyerang, nyawa -1, gelombang tidak berganti.</li>' +
-          '<li>🌊 Tembak 5 hornet untuk naik gelombang: waktu makin singkat, poin makin besar.</li>' +
-          '<li>⚔️ Mode 2 Pemain: kamera terbagi dua. Yang benar lebih dulu dapat poin, nyawa habis = kalah.</li>' +
+          '<li>🖐️ <b>Peragakan gestur.</b> Peragakan gestur huruf atau kata yang tampil di atas hornet yang menyala.</li>' +
+          '<li>✅ <b>Gestur benar.</b> Blaster otomatis menembak hornet tersebut.</li>' +
+          '<li>❌ <b>Gestur salah atau waktu habis.</b> Hornet menyerang, nyawa berkurang 1, dan gelombang tidak berganti.</li>' +
+          '<li>🌊 <b>Naik gelombang.</b> Tembak 5 hornet untuk naik gelombang. Waktu semakin singkat dan poin semakin besar.</li>' +
+          '<li>⚔️ <b>Mode 2 Pemain.</b> Kamera terbagi dua. Pemain yang benar lebih dahulu mendapat poin, dan pemain yang nyawanya habis dinyatakan kalah.</li>' +
         '</ul></div>' +
-        '<button type="button" class="neu-btn btn-add game-btn-mulai" id="hunter-detail-mulai">' + ICON.play + ' Mulai</button>' +
+        '<button type="button" class="neu-btn btn-add game-btn-mulai" id="hunter-detail-mulai">' + ICON.play + ' Lanjut</button>' +
       '</div>';
     host.appendChild(detailEl);
 
@@ -122,8 +124,8 @@
       '<div class="game-play-topbar">' +
         '<div class="game-play-brand"></div>' +
         '<div class="game-play-actions">' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-btn-atur">' + ICON.atur + '<span>Atur</span></button>' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-btn-leaderboard">' + ICON.podium + '<span>Leaderboard</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-btn-atur">' + ICON.gear + '<span>Pengaturan</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-btn-leaderboard">' + ICON.trophy + '<span>Leaderboard</span></button>' +
           '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide game-play-icon-btn--danger" id="hunter-btn-keluar">' + ICON.exit + '<span>Keluar</span></button>' +
         '</div>' +
       '</div>' +
@@ -211,8 +213,8 @@
         '<div class="game-play-brand" id="hunter-lb-brand"></div>' +
         '<div class="game-play-actions">' +
           '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-lb-kembali">' + ICON.back + '<span>Kembali</span></button>' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-lb-atur">' + ICON.atur + '<span>Atur</span></button>' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide game-play-icon-btn--active">' + ICON.podium + '<span>Leaderboard</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="hunter-lb-atur">' + ICON.gear + '<span>Pengaturan</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide game-play-icon-btn--active">' + ICON.trophy + '<span>Leaderboard</span></button>' +
           '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide game-play-icon-btn--danger" id="hunter-lb-keluar">' + ICON.exit + '<span>Keluar</span></button>' +
         '</div>' +
       '</div>' +
@@ -432,11 +434,19 @@
       $('hunter-nama-label').textContent = setup.mode === 2 ? 'Nama Pemain (kiri & kanan)' : 'Nama Pemain';
     });
     $('hunter-btn-mulai').addEventListener('click', () => {
-      const n1 = $('hunter-nama').value.trim() || (setup.mode === 2 ? 'Pemain 1' : 'Pemain');
-      let n2 = $('hunter-nama2').value.trim() || 'Pemain 2';
+      const dua = setup.mode === 2;
+      const i1 = $('hunter-nama'), i2 = $('hunter-nama2');
+      const kosong = !i1.value.trim() ? i1 : (dua && !i2.value.trim() ? i2 : null);
+      if (kosong) {   // nama pemain wajib diisi
+        if (window.AstaKandaNamaWajib) window.AstaKandaNamaWajib(kosong, dua ? 'Isi nama kedua pemain terlebih dahulu sebelum mulai bermain.' : undefined);
+        else kosong.focus();
+        return;
+      }
+      const n1 = i1.value.trim();
+      let n2 = i2.value.trim();
       if (n2.toLowerCase() === n1.toLowerCase()) n2 += ' 2';
-      if ($('hunter-nama').value.trim()) localStorage.setItem('astakanda_player_nama', n1);
-      mulai({ kategori: setup.kategori, mode: setup.mode, names: setup.mode === 2 ? [n1, n2] : [n1] });
+      localStorage.setItem('astakanda_player_nama', n1);
+      mulai({ kategori: setup.kategori, mode: setup.mode, names: dua ? [n1, n2] : [n1] });
     });
     $('hunter-btn-atur').addEventListener('click', () => { tutup(); showMy(setupEl); });
     $('hunter-btn-keluar').addEventListener('click', mintaKeluar);

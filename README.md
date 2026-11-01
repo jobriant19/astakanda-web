@@ -14,60 +14,105 @@ Ikuti langkah di bawah dari awal, semua lewat terminal Laragon.
 
 ## 0. Struktur paket ini
 
+Struktur di bawah ini mengikuti isi project `astakanda` saat ini (urutan
+folder sama seperti di VS Code). Folder/file bawaan Laravel yang tidak
+diubah ditandai *(bawaan Laravel)*.
+
 ```
 astakanda/
-├── app/Http/Controllers/
-│   ├── GestureController.php        ← halaman utama, kata, rekam & pengenalan gestur
-│   ├── SignLanguageController.php   ← jenis bahasa isyarat (BISINDO, SIBI, dst.)
-│   ├── RiwayatController.php        ← riwayat hasil ujian/belajar
-│   ├── GameSkinController.php       ← skin & leaderboard game
-│   └── DinoScoreController.php      ← skor & leaderboard Dino Attack
-├── app/Models/
-│   ├── GestureWord.php
-│   ├── GestureSample.php
-│   └── ...                          ← model untuk jenis bahasa isyarat, riwayat, skin & skor game (sesuai project Anda)
-├── database/migrations/
-│   ├── 2026_09_23_000001_create_gesture_words_table.php
-│   ├── 2026_09_23_000002_create_gesture_samples_table.php
-│   └── ...                          ← migration tabel jenis bahasa isyarat, riwayat, skin & skor game
-├── database/seeders/GestureWordSeeder.php
-├── routes/web.php                   ← route gesture, bahasa-isyarat, riwayat, game/skins, game/dino
-├── resources/views/astakanda/
-│   ├── index.blade.php              ← halaman utama (kamera, info deteksi, tab Belajar)
-│   ├── ujian/panel.blade.php        ← markup tab "Ujian"
-│   ├── game/panel.blade.php         ← markup tab "Game"
-│   └── history/panel.blade.php      ← markup tab "Riwayat"
-├── public/assets-astakanda/
-│   ├── css/
-│   │   ├── style.css                ← style utama (layout, kamera, Info Deteksi, Kamus Isyarat)
-│   │   └── responsive.css           ← tampilan responsive (tablet & HP), dimuat PALING AKHIR
-│   ├── js/app.js                    ← kamera, deteksi tangan (MediaPipe), pengenal gestur lokal, Kamus Isyarat
-│   ├── ujian/
-│   │   ├── ujian.css                ← style tab "Ujian"
-│   │   └── ujian.js                 ← logika Ujian (timer, soal, deteksi gestur)
-│   ├── game/
-│   │   ├── game.css                 ← style pilihan game + layar detail
-│   │   ├── game.js                  ← logika pilih game & tombol Mulai
-│   │   ├── hasil.css / hasil.js     ← layar hasil game
-│   │   ├── sound.js                 ← efek suara game
-│   │   ├── sertifikat.js            ← pembuatan sertifikat
-│   │   ├── apple/                   ← game "Apple Snake"
-│   │   │   ├── apple.css
-│   │   │   └── apple.js
-│   │   ├── dino/                    ← game "Dino Attack"
-│   │   │   ├── dino.css
-│   │   │   └── dino.js
-│   │   └── ladders/                 ← game "Ladders"
-│   │       ├── ladders.css
-│   │       └── ladders.js
-│   └── history/
-│       ├── riwayat.css              ← style tab "Riwayat"
-│       └── riwayat.js               ← logika tab "Riwayat"
-├── public/assets/images/            ← taruh: logo.png, notfound.png, add.png, icon.png, camera.png,
-│                                      apple.png, dino.png, ladders.png
-└── python-service/                  ← OPSIONAL: app.py, requirements.txt
-                                       (pengenalan gestur sekarang berjalan lokal di browser,
-                                        service ini tidak lagi dibutuhkan untuk deteksi live)
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Controller.php                ← controller dasar (bawaan Laravel)
+│   │   ├── GestureController.php         ← halaman utama, kata, rekam & pengenalan gestur
+│   │   ├── SignLanguageController.php    ← jenis bahasa isyarat (BISINDO, SIBI, dst.)
+│   │   ├── RiwayatController.php         ← riwayat hasil ujian/belajar
+│   │   ├── GameSkinController.php        ← skin & leaderboard game
+│   │   └── DinoScoreController.php       ← skor & leaderboard Dino Attack
+│   ├── Models/
+│   │   ├── GestureWord.php               ← kata/huruf yang bisa direkam gesturnya
+│   │   ├── GestureSample.php             ← hasil rekaman gestur per kata/huruf
+│   │   ├── SignLanguage.php              ← jenis bahasa isyarat
+│   │   ├── UjianRiwayat.php              ← riwayat hasil ujian
+│   │   ├── GameSkin.php                  ← daftar skin game
+│   │   ├── GameUnlockedSkin.php          ← skin yang sudah dibuka pemain
+│   │   ├── GameGuestProgress.php         ← progres game pemain tamu (guest)
+│   │   ├── DinoScore.php                 ← skor Dino Attack
+│   │   └── User.php                      ← model pengguna (bawaan Laravel)
+│   └── Providers/                        ← service provider (bawaan Laravel)
+├── bootstrap/                            ← bootstrap aplikasi (bawaan Laravel)
+├── certs/
+│   └── aiven-ca.pem                      ← sertifikat CA Aiven untuk koneksi database (SSL)
+├── database/
+│   ├── migrations/                       ← tabel gestur, jenis bahasa isyarat, riwayat, skin & skor game
+│   └── seeders/GestureWordSeeder.php     ← mengisi huruf A–Z awal
+├── python/                               ← OPSIONAL: app.py, requirements.txt
+│                                           (pengenalan gestur sekarang berjalan lokal di browser,
+│                                            service ini tidak lagi dibutuhkan untuk deteksi live)
+├── resources/
+│   ├── css/                              ← CSS bawaan Laravel
+│   ├── js/                               ← JS bawaan Laravel
+│   └── views/
+│       ├── welcome.blade.php             ← halaman bawaan Laravel
+│       └── astakanda/
+│           ├── index.blade.php           ← halaman utama (kamera, info deteksi, tab Belajar)
+│           ├── ujian/panel.blade.php     ← markup tab "Ujian"
+│           ├── game/panel.blade.php      ← markup tab "Game" (pilih game, cara bermain, atur permainan)
+│           └── history/panel.blade.php   ← markup tab "Riwayat"/"Hasil"
+├── routes/
+│   ├── web.php                           ← route gesture, bahasa-isyarat, riwayat, game/skins, game/dino
+│   └── console.php                       ← route perintah konsol (bawaan Laravel)
+├── storage/, tests/, vendor/             ← bawaan Laravel
+├── .env, .env.example                    ← pengaturan environment (database, GESTURE_SERVICE_URL, dst.)
+├── .gitignore, .gitattributes            ← aturan Git
+├── .dockerignore, .editorconfig, .npmrc  ← pengaturan Docker, editor, dan npm
+└── public/
+    ├── assets/images/                    ← taruh: logo.png, notfound.png, add.png, icon.png, camera.png,
+    │                                       apple.png, dino.png, ladders.png, hornet.png,
+    │                                       applescore.png, dinoscore.png, laddersscore.png, hornetscore.png
+    └── assets-astakanda/
+        ├── css/
+        │   ├── style.css                 ← style utama (layout, kamera, Info Deteksi, Kamus Isyarat)
+        │   └── responsive.css            ← tampilan responsive (tablet & HP), dimuat PALING AKHIR
+        ├── js/
+        │   └── app.js                    ← kamera, deteksi tangan (MediaPipe), pengenal gestur lokal, Kamus Isyarat
+        ├── ujian/
+        │   ├── ujian.css                 ← style tab "Ujian"
+        │   ├── ujianresponsive.css       ← responsive tab "Ujian"
+        │   └── ujian.js                  ← logika Ujian (timer, soal, deteksi gestur)
+        ├── game/
+        │   ├── game.css                  ← style pilih game + layar cara bermain/atur permainan
+        │   ├── gameresponsive.css        ← responsive tab "Game" (kartu game, popup, Skor Terbaik)
+        │   ├── game.js                   ← logika pilih game, cara bermain, atur permainan, Skor Terbaik
+        │   ├── hasil.css                 ← style layar hasil game
+        │   ├── hasil.js                  ← logika layar hasil game
+        │   ├── sertifikat.js             ← pembuatan sertifikat
+        │   ├── sound.js                  ← efek suara game
+        │   ├── apple/                    ← game "Apple Snake"
+        │   │   ├── apple.css             ← style Apple Snake
+        │   │   ├── appleresponsive.css   ← responsive Apple Snake
+        │   │   └── apple.js              ← logika Apple Snake
+        │   ├── dino/                     ← game "Dino Attack"
+        │   │   ├── dino.css              ← style Dino Attack
+        │   │   ├── dinoresponsive.css    ← responsive Dino Attack
+        │   │   └── dino.js               ← logika Dino Attack
+        │   ├── ladders/                  ← game "Snakes Ladders"
+        │   │   ├── ladders.css           ← style Snakes Ladders
+        │   │   ├── laddersresponsive.css ← responsive Snakes Ladders
+        │   │   └── ladders.js            ← logika Snakes Ladders (papan, dadu, giliran, AI)
+        │   └── hunter/                   ← game "Hornet Hunter"
+        │       ├── hunter.css            ← style Hornet Hunter
+        │       ├── hunter-ui.js          ← kartu, cara bermain, atur permainan & layar bermain
+        │       ├── hunter.js             ← logika utama permainan
+        │       ├── lib.js                ← fungsi pembantu bersama
+        │       ├── world.js              ← dunia/arena permainan
+        │       ├── hornets.js            ← hornet (musuh)
+        │       ├── weapon.js             ← senjata (blaster)
+        │       ├── particles.js          ← efek partikel
+        │       └── relief.js             ← relief/latar arena
+        └── history/
+            ├── riwayat.css               ← style tab "Riwayat"/"Hasil"
+            ├── historyresponsive.css     ← responsive tab "Riwayat"/"Hasil"
+            └── riwayat.js                ← logika tab "Riwayat"/"Hasil"
 ```
 
 > **Kenapa folder asset bernama `assets-astakanda` bukan `belajar` dll?**

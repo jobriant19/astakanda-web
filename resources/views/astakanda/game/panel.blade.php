@@ -41,23 +41,23 @@
         <div class="game-howto-title">Cara Bermain</div>
 
         <ul id="game-howto-apple" class="game-howto-list hidden">
-          <li>🖐️ Jawab soal huruf/kata yang tampil dengan memperagakan gestur di depan kamera.</li>
-          <li>✅ Jawaban benar — ular otomatis menuju apel emas sambil menghindari rintangan.</li>
-          <li>🧱 Jawaban salah — ular tetap jalan lurus &amp; apel tetap merah (skor tidak bertambah).</li>
-          <li>💥 Menabrak batas arena membuat permainan berakhir (game over).</li>
+          <li>🖐️ <b>Peragakan gestur.</b> Jawab soal huruf atau kata yang tampil dengan memperagakan gestur di depan kamera.</li>
+          <li>✅ <b>Jawaban benar.</b> Ular otomatis menuju apel emas sambil menghindari rintangan.</li>
+          <li>🧱 <b>Jawaban salah.</b> Ular tetap berjalan lurus, apel tetap merah, dan skor tidak bertambah.</li>
+          <li>💥 <b>Hati-hati.</b> Menabrak batas arena membuat permainan berakhir (game over).</li>
         </ul>
 
         <ul id="game-howto-dino" class="game-howto-list hidden">
-          <li>🖐️ Rintangan darat &amp; serangan udara datang membawa huruf/kata di atasnya.</li>
-          <li>✅ Peragakan gestur yang sesuai ke kamera — label jadi hijau, dino melompat atau menyerang.</li>
-          <li>❌ Gestur salah — label jadi merah, rintangan menabrak dino / serangan udara mengenainya.</li>
-          <li>❤️ Ada 3 nyawa. Rintangan yang terlewat juga mengurangi nyawa; nyawa habis = game over.</li>
+          <li>🖐️ <b>Waspadai rintangan.</b> Rintangan darat dan serangan udara datang dengan membawa huruf atau kata di atasnya.</li>
+          <li>✅ <b>Gestur benar.</b> Peragakan gestur yang sesuai di depan kamera. Label menjadi hijau, lalu dino melompat atau menyerang.</li>
+          <li>❌ <b>Gestur salah.</b> Label menjadi merah, sehingga rintangan menabrak dino atau serangan udara mengenainya.</li>
+          <li>❤️ <b>Tersedia 3 nyawa.</b> Rintangan yang terlewat juga mengurangi nyawa. Jika nyawa habis, permainan berakhir (game over).</li>
         </ul>
       </div>
 
       <button type="button" id="game-btn-mulai" class="neu-btn btn-add game-btn-mulai">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Mulai
+        Lanjut
       </button>
       <div id="game-btn-note" class="game-btn-note hidden">🚧 Game ini sedang disiapkan, tunggu update berikutnya ya.</div>
     </div>

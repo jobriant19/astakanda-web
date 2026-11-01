@@ -107,6 +107,7 @@
   const svgIkon = (isi) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + isi + '</svg>';
   const ICON_PODIUM = svgIkon('<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>');
   const ICON_KELUAR = svgIkon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>');
+  const ICON_KEMBALI = svgIkon('<path d="m15 18-6-6 6-6"/>');
   const ICON_APEL   = svgIkon('<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/>');
   const ICON_GIFT   = svgIkon('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>');
   const RE_EMOJI = /\p{Extended_Pictographic}\uFE0F?/gu;
@@ -842,8 +843,36 @@
 
   btnSettings.addEventListener('click', () => { hentikanLoop(); window.AstaKandaGameUI.showSetup(); });
   btnKeluar.addEventListener('click', bukaKonfirmasiKeluar);
-  btnLeaderboard.addEventListener('click', () => { hentikanLoop(); window.AstaKandaGameUI.showLeaderboard(); });
-  btnLeaderboard2.addEventListener('click', () => { screenResult.classList.add('hidden'); window.AstaKandaGameUI.showLeaderboard(); });
+  // Tombol Pengaturan di layar main: tambah teks
+  btnSettings.classList.add('game-play-icon-btn--wide');
+  btnSettings.insertAdjacentHTML('beforeend', '<span>Pengaturan</span>');
+
+  // Buka Leaderboard + pasang tombol "Kembali" (di kiri Pengaturan) yang mengarah ke Apple Snake
+  function bukaLeaderboard() {
+    window.AstaKandaGameUI.showLeaderboard();
+    // shortcut: topbar leaderboard dicari lewat tombol aktif "Leaderboard", upgrade bila markup game.js berubah
+    const aktif = document.querySelector('#game-leaderboard .game-play-icon-btn--active');
+    const wadah = aktif && aktif.parentElement;
+    if (!wadah) return;
+    const lama = wadah.querySelector('#apple-btn-kembali');
+    if (lama) lama.remove();
+    const pengaturan = wadah.firstElementChild;
+    if (pengaturan && !pengaturan.querySelector('span')) {
+      pengaturan.classList.add('game-play-icon-btn--wide');
+      pengaturan.insertAdjacentHTML('beforeend', '<span>Pengaturan</span>');
+    }
+    const kembali = document.createElement('button');
+    kembali.type = 'button';
+    kembali.id = 'apple-btn-kembali';
+    kembali.className = 'game-play-icon-btn game-play-icon-btn--wide';
+    kembali.innerHTML = ICON_KEMBALI + '<span>Kembali</span>';
+    kembali.addEventListener('click', () => start(cfg));
+    wadah.insertBefore(kembali, wadah.firstElementChild);
+    // Klik tombol apa pun di topbar = keluar dari leaderboard, jadi Kembali dilepas agar tidak bocor ke game lain
+    wadah.addEventListener('click', () => setTimeout(() => kembali.remove(), 0), { capture: true, once: true });
+  }
+  btnLeaderboard.addEventListener('click', () => { hentikanLoop(); bukaLeaderboard(); });
+  btnLeaderboard2.addEventListener('click', () => { screenResult.classList.add('hidden'); bukaLeaderboard(); });
   btnGantiPemain.addEventListener('click', () => { screenResult.classList.add('hidden'); hentikanLoop(); window.AstaKandaGameUI.showSelect(); });
 
   window.AstaKandaGames = window.AstaKandaGames || {};

@@ -10,7 +10,14 @@
   const logoNode = document.querySelector('img.logo');
   const LOGO = (logoNode && logoNode.src) || '/assets/images/logo.png';
   const FONT = "'Fredoka', 'Baloo 2', 'Poppins', 'Segoe UI', Arial, sans-serif";
-  const croppedIcon = cropImage(IMG); // mulai memproses ikon begitu skrip dimuat
+  // Hasil potongan ikon disimpan: kunjungan berikutnya langsung tampil tanpa menunggu proses potong.
+  // shortcut: bila ladders.png diganti, ubah 'V1' menjadi 'V2' agar potongan lama tidak terpakai
+  const CROP_KEY = 'astakanda.laddersCropV1:' + IMG;
+  let cachedCrop = null;
+  try { cachedCrop = localStorage.getItem(CROP_KEY); } catch (e) { /* abaikan */ }
+  const croppedIcon = cachedCrop
+    ? Promise.resolve(cachedCrop)
+    : cropImage(IMG).then((u) => { try { if (u && u !== IMG) localStorage.setItem(CROP_KEY, u); } catch (e) { /* abaikan */ } return u; });
 
   // ---------------- Board ----------------
   // Tiap ular/tangga menempati jalur kolomnya sendiri (jarak antar-jalur >= 1 kotak) -> tidak ada yang bersilangan
@@ -34,6 +41,7 @@
   const SV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
   const ICON = {
     back:  SV + '><path d="m15 18-6-6 6-6"/></svg>',
+    gear:  SV + '><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
     user:  SV + ' class="game-chip-ico"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     users: SV + ' class="game-chip-ico"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
     ai:    SV + ' class="game-chip-ico"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><circle cx="9" cy="14" r="1.2" fill="currentColor"/><circle cx="15" cy="14" r="1.2" fill="currentColor"/><path d="M9.5 17.5h5"/></svg>',
@@ -100,7 +108,7 @@
       card.innerHTML = '<div class="game-card-img-wrap"><img src="' + IMG + '" alt=""></div><span class="game-card-name"></span>';
     }
     const cImg = card.querySelector('img'), cName = card.querySelector('.game-card-name') || card.lastElementChild;
-    if (cImg) { cImg.removeAttribute('id'); cImg.removeAttribute('srcset'); cImg.src = IMG; cImg.alt = 'Snakes Ladders'; cImg.classList.add('ladders-img'); }
+    if (cImg) { cImg.removeAttribute('id'); cImg.removeAttribute('srcset'); cImg.src = cachedCrop || IMG; cImg.alt = 'Snakes Ladders'; cImg.classList.add('ladders-img'); }
     if (cName) cName.textContent = 'Snakes Ladders';
     Array.from(card.attributes).forEach((a) => { if (a.name.indexOf('data-') === 0) card.removeAttribute(a.name); });
     setTimeout(() => document.querySelectorAll('.ladders-img').forEach((im) => im.classList.add('is-ready')), 3000); // pengaman
@@ -117,13 +125,13 @@
         '<img class="game-detail-img ladders-img" src="' + IMG + '" alt="">' +
         '<div class="game-detail-name">Snakes Ladders</div>' +
         '<div class="game-howto"><div class="game-howto-title">CARA BERMAIN</div><ul class="game-howto-list">' +
-          '<li>👥 Pilih lawan <b>AI</b> atau 2–4 pemain, lalu isi nama pemain.</li>' +
-          '<li>🤟 Tiap giliran, peragakan gestur huruf/kata yang muncul di depan kamera.</li>' +
-          '<li>🎲 Gestur <b>benar</b> = kocok dadu. ⏭️ Gestur <b>salah</b> = giliran dilewati.</li>' +
-          '<li>🪜 Naik tangga, 🐍 turun karena ular. Dapat angka <b>6</b> = kocok lagi!</li>' +
-          '<li>🏆 Yang lebih dulu sampai kotak <b>100</b> menang.</li>' +
+          '<li>👥 <b>Pilih lawan.</b> Bermain melawan <b>AI</b> atau bersama 2 sampai 4 pemain, lalu isi nama pemain.</li>' +
+          '<li>🤟 <b>Peragakan gestur.</b> Pada setiap giliran, peragakan gestur huruf atau kata yang muncul di depan kamera.</li>' +
+          '<li>🎲 <b>Kocok dadu.</b> Gestur <b>benar</b> membuat dadu dapat dikocok, sedangkan gestur <b>salah</b> membuat giliran dilewati.</li>' +
+          '<li>🪜 <b>Tangga dan ular.</b> Tangga membuat pemain naik, sedangkan ular membuat pemain turun. Angka <b>6</b> memberi kesempatan mengocok dadu sekali lagi!</li>' +
+          '<li>🏆 <b>Menang.</b> Pemain yang lebih dahulu mencapai kotak <b>100</b> menjadi pemenang.</li>' +
         '</ul></div>' +
-        '<button type="button" class="neu-btn btn-add game-btn-mulai" id="ladders-detail-mulai">' + ICON.play + ' Mulai</button>' +
+        '<button type="button" class="neu-btn btn-add game-btn-mulai" id="ladders-detail-mulai">' + ICON.play + ' Lanjut</button>' +
       '</div>';
     host.appendChild(detailEl);
 
@@ -157,8 +165,8 @@
       '<div class="game-play-topbar">' +
         '<div class="game-play-brand"></div>' +
         '<div class="game-play-actions">' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="ladders-btn-atur">' + ICON.atur + '<span>Atur</span></button>' +
-          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="ladders-btn-lb">' + ICON.podium + '<span>Leaderboard</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="ladders-btn-atur">' + ICON.gear + '<span>Pengaturan</span></button>' +
+          '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide" id="ladders-btn-lb">' + ICON.trophy + '<span>Leaderboard</span></button>' +
           '<button type="button" class="game-play-icon-btn game-play-icon-btn--wide game-play-icon-btn--danger" id="ladders-btn-keluar">' + ICON.exit + '<span>Keluar</span></button>' +
         '</div>' +
       '</div>' +
@@ -260,7 +268,16 @@
     const ai = setup.mode === 'ai';
     const count = ai ? 1 : parseInt(setup.mode, 10);
     const names = [];
-    for (let i = 0; i < count; i++) names.push((setup.names[i] || '').trim() || ('Pemain ' + (i + 1)));
+    for (let i = 0; i < count; i++) {
+      const n = (setup.names[i] || '').trim();
+      if (!n) {   // nama pemain wajib diisi
+        const inp = namesEl.querySelectorAll('input')[i];
+        if (window.AstaKandaNamaWajib) window.AstaKandaNamaWajib(inp, count > 1 ? 'Isi nama semua pemain terlebih dahulu sebelum mulai bermain.' : undefined);
+        else if (inp) inp.focus();
+        return;
+      }
+      names.push(n);
+    }
     start({ mode: setup.mode, kategori: setup.kategori, names });
   }
 
@@ -974,7 +991,18 @@
     lbEl.appendChild(lb);
     document.body.appendChild(lbEl);
     const gear = $('ladders-lb-settings'), out = $('ladders-lb-keluar');
-    if (gear) gear.addEventListener('click', () => { tutupLb(); showMy(setupEl); });
+    lb.querySelectorAll('[id$="btn-kembali"]').forEach((n) => n.remove()); // buang sisa tombol Kembali milik Dino yang ikut tersalin
+    if (gear) {
+      gear.addEventListener('click', () => { tutupLb(); showMy(setupEl); });
+      if (!gear.querySelector('span')) { gear.classList.add('game-play-icon-btn--wide'); gear.insertAdjacentHTML('beforeend', '<span>Pengaturan</span>'); }
+      const kembali = document.createElement('button');
+      kembali.type = 'button';
+      kembali.id = 'ladders-lb-kembali';
+      kembali.className = 'game-play-icon-btn game-play-icon-btn--wide';
+      kembali.innerHTML = ICON.back + '<span>Kembali</span>';
+      kembali.addEventListener('click', () => { tutupLb(); if (config) start(config); });
+      gear.parentElement.insertBefore(kembali, gear);
+    }
     if (out) out.addEventListener('click', () => konfirmasiKeluar(() => { tutupLb(); toSelect(); }, false));
     return true;
   }

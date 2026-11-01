@@ -609,3 +609,300 @@
 @media (prefers-reduced-motion: reduce) {
   #game-select .game-cards.is-ready .game-card::after { animation: none; }
 }
+
+/* =====================================================================
+   TAMBAHAN — Pilih Game: judul jelas di dark theme, ornamen geometri
+   di subjudul, kartu selalu terlihat penuh, ikon di sebelah Best Score
+   ===================================================================== */
+
+/* ---------- 1. Judul "Pilih Game": warna baru, terbaca di light & dark ---------- */
+#game-select .game-select-title {
+  background-image: linear-gradient(100deg, #2563eb 0%, #7c3aed 25%, #db2777 50%, #f59e0b 75%, #2563eb 100%);
+}
+html[data-theme='dark'] #game-select .game-select-title {
+  background-image: linear-gradient(100deg, #60a5fa 0%, #c4b5fd 25%, #f9a8d4 50%, #fcd34d 75%, #60a5fa 100%);
+  filter: drop-shadow(0 1px 8px rgba(147, 197, 253, .35));
+}
+
+/* ---------- 2. Ornamen geometri animatif kiri-kanan subjudul ---------- */
+#game-select .game-select-sub::before,
+#game-select .game-select-sub::after {
+  width: 52px;
+  height: 16px;
+  margin-top: -8px;
+  clip-path: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 16'%3E%3Cpath d='M1 8h8.5' stroke='%2314b8a6' stroke-width='2' stroke-linecap='round' stroke-dasharray='8.5 8.5'%3E%3Canimate attributeName='stroke-dashoffset' values='8.5;0;0;-8.5' keyTimes='0;.35;.7;1' dur='2.4s' repeatCount='indefinite'/%3E%3C/path%3E%3Ccircle cx='15' cy='8' r='3' fill='none' stroke='%233b82f6' stroke-width='2'%3E%3Canimate attributeName='r' values='2.2;3.6;2.2' dur='1.6s' repeatCount='indefinite'/%3E%3Canimate attributeName='stroke' values='%233b82f6;%2306b6d4;%233b82f6' dur='1.6s' repeatCount='indefinite'/%3E%3C/circle%3E%3Cpath d='M20.5 8h3' stroke='%23ec4899' stroke-width='2' stroke-linecap='round'%3E%3Canimate attributeName='opacity' values='1;.2;1' dur='1.2s' repeatCount='indefinite'/%3E%3C/path%3E%3Cg%3E%3Cpath d='M32 1.5 38.5 8 32 14.5 25.5 8z' fill='%23f59e0b'%3E%3Canimate attributeName='fill' values='%23f59e0b;%23f97316;%23ef4444;%23f59e0b' dur='3.6s' repeatCount='indefinite'/%3E%3C/path%3E%3Cpath d='M32 5 35 8 32 11 29 8z' fill='%23fff' fill-opacity='.92'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 32 8' to='-360 32 8' dur='4s' repeatCount='indefinite'/%3E%3C/path%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 32 8' to='360 32 8' dur='4s' repeatCount='indefinite'/%3E%3C/g%3E%3Cpath d='M46 3l1.2 3.8L51 8l-3.8 1.2L46 13l-1.2-3.8L41 8l3.8-1.2z' fill='%238b5cf6'%3E%3CanimateTransform attributeName='transform' type='rotate' values='0 46 8;90 46 8' dur='1.8s' repeatCount='indefinite'/%3E%3Canimate attributeName='fill' values='%238b5cf6;%23ec4899;%2338bdf8;%238b5cf6' dur='3.6s' repeatCount='indefinite'/%3E%3C/path%3E%3Ccircle cx='24' cy='2.5' r='.9' fill='%2314b8a6'%3E%3Canimate attributeName='opacity' values='0;1;0' dur='1.5s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='40' cy='13.5' r='.9' fill='%23ec4899'%3E%3Canimate attributeName='opacity' values='0;1;0' dur='1.5s' begin='.75s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 1px rgba(15, 23, 42, .35));
+}
+#game-select .game-select-sub::before { left: -62px; animation: gc-orn-l 2.4s ease-in-out infinite; }
+#game-select .game-select-sub::after  { right: -62px; transform: scaleX(-1); animation: gc-orn-r 2.4s ease-in-out infinite; }
+html[data-theme='dark'] #game-select .game-select-sub::before,
+html[data-theme='dark'] #game-select .game-select-sub::after { filter: drop-shadow(0 0 2px rgba(255, 255, 255, .4)); }
+@keyframes gc-orn-l { 0%, 100% { translate: 0 0; } 50% { translate: -4px 0; } }
+@keyframes gc-orn-r { 0%, 100% { translate: 0 0; } 50% { translate: 4px 0; } }
+
+/* ---------- 3. Kartu: selalu pas di area yang tersedia (tanpa scroll), isi mengecil proporsional ---------- */
+#game-select .game-cards { overflow: hidden; container-type: size; }   /* dasar ukuran untuk @container di bawah */
+#game-select .game-page  { align-items: center; }
+#game-select .game-card  { min-height: 0; }
+#game-select .game-card-img-wrap { min-height: 44px; }   /* medali boleh mengecil agar semua isi + tombol Play muat */
+#game-select .game-card-desc { overflow-wrap: anywhere; }
+
+/* Makin pendek area kartu (layar pendek / zoom besar), isi dipadatkan bertahap */
+@container (max-height: 330px) {
+  #game-select .game-card { padding: 12px 14px; gap: 6px; }
+  #game-select .game-card-info { gap: 4px; }
+  #game-select .game-card-name { font-size: 16px; }
+  #game-select .game-card-desc { font-size: 12px; line-height: 1.35; min-height: 0; }
+}
+@container (max-height: 280px) {
+  #game-select .game-card-desc { display: none; }
+}
+@container (max-height: 212px) {
+  #game-select .game-card-img-wrap { display: none; }
+}
+
+/* ---------- 4. Ikon di kiri angka Best Score (gaya crown) ---------- */
+.gc-rk-ico {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 2px 3px rgba(201, 143, 31, .45));
+}
+.gc-rk-ico:empty { display: none; }
+.gc-rk-ico svg { display: block; width: 100%; height: 100%; }
+.gc-rk-ico + .gc-rk-val { margin-left: -3px; }
+.gc-rk-label { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- HP ---------- */
+@media (max-width: 640px) {
+  #game-select .game-select-sub::before,
+  #game-select .game-select-sub::after { width: 30px; height: 9px; margin-top: -4.5px; }
+  #game-select .game-select-sub::before { left: -36px; }
+  #game-select .game-select-sub::after  { right: -36px; }
+  #game-select .game-page {
+    grid-template-rows: repeat(var(--gc-n, 1), minmax(122px, 150px));   /* baris tidak lebih pendek dari isinya */
+    align-content: safe center;
+  }
+  #game-select .game-card { min-height: 0; }   /* di HP tinggi diatur oleh baris grid di atas */
+  .gc-rk-ico { width: 18px; height: 18px; }
+}
+@media (max-width: 380px) {
+  #game-select .game-select-sub::before,
+  #game-select .game-select-sub::after { width: 22px; height: 7px; margin-top: -3.5px; }
+  #game-select .game-select-sub::before { left: -27px; }
+  #game-select .game-select-sub::after  { right: -27px; }
+}
+
+/* Ikon skor: lebih besar, bayangan netral (bukan emas) */
+.gc-rk-ico { width: 28px; height: 28px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
+html[data-theme='dark'] .gc-rk-ico { filter: drop-shadow(0 0 2px rgba(255, 255, 255, .5)); }
+@media (max-width: 640px) { .gc-rk-ico { width: 22px; height: 22px; } }
+
+/* Ikon Best Score dari gambar PNG */
+.gc-rk-ico img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* Popup kartu penuh: kartu yang sama, selalu kolom, tanpa scroll, deskripsi tidak dipotong */
+#game-select .gc-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(3px);
+}
+#game-select .gc-pop .game-card {
+  flex: none;
+  width: min(460px, 100%);
+  height: auto;
+  max-height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+  gap: 8px;
+  padding: 16px 16px 14px;
+  cursor: default;
+}
+#game-select .gc-pop .game-card-img-wrap { flex: 0 1 150px; width: 100%; height: auto; min-height: 44px; }
+#game-select .gc-pop .game-card-info { flex: none; gap: 6px; }
+#game-select .gc-pop .game-card-name { font-size: 18px; }
+#game-select .gc-pop .game-card-name::after { width: 36px; height: 3px; margin: 6px auto 0; }
+#game-select .gc-pop .game-card-desc {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+  overflow: visible;
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+/* Popup kartu: teks Best Score dan nama pemain tampil utuh */
+#game-select .gc-pop .gc-rk-label { overflow: visible; text-overflow: clip; }
+#game-select .gc-pop .gc-name { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+#game-select .gc-pop .game-card-foot { flex-wrap: wrap; }
+#game-select .gc-pop .game-card-rekor { flex: 1 0 auto; }
+@container (max-width: 340px) {   /* HP / layar sempit: Play pindah ke baris sendiri */
+  #game-select .gc-pop .game-card-play { flex: 1 1 100%; height: 36px; }
+}
+
+/* Cara Bermain: kata kunci lebih menonjol */
+.game-howto-list li b { color: var(--ink-900); }
+
+/* Popup kartu: tanpa shimmer */
+#game-select .gc-pop .game-card::after { display: none; }
+
+/* Atur Permainan (Apple Snake dan Dino Attack): tab bar tampil, isi dipadatkan agar tetap 1 layar tanpa scroll */
+@media (min-width: 641px) {
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-inner { gap: 10px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-img { width: 40px; height: 40px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-label { margin-bottom: 6px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-chip { padding: 7px 6px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-nama-input { padding: 8px 12px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-preview { padding: 8px; }
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-btn-skin { padding: 9px; }
+}
+
+/* HP: gambar kecil di atas disembunyikan agar muat bersama tab bar */
+@media (max-width: 640px) and (max-height: 800px) {
+  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-img { display: none; }
+}
+
+/* Kolom Nama Pemain Apple Snake: teks di tengah seperti Dino Attack */
+.game-setup-nama-input { text-align: center; }
+
+/* Label "Skor Terbaik" putih saat dark theme */
+html[data-theme='dark'] .gc-rk-label { color: #fff; }
+
+/* Shimmer kartu game: lebih jelas di dark theme */
+html[data-theme='dark'] #game-select .game-card::after {
+  mix-blend-mode: screen;
+  background: linear-gradient(110deg, transparent 34%, rgba(120, 170, 255, .30) 44%, rgba(255, 255, 255, .60) 50%, rgba(255, 190, 90, .30) 56%, transparent 66%);
+}
+
+/* Popup kartu: tombol tutup ✕ merah di pojok kanan atas */
+#game-select .gc-pop .game-card { position: relative; }
+#game-select .gc-pop .gc-pop-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(145deg, #fb7185, #ef4444);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, .45);
+  transition: transform .12s ease, filter .12s ease;
+}
+#game-select .gc-pop .gc-pop-x svg { width: 14px; height: 14px; }
+#game-select .gc-pop .gc-pop-x:hover { transform: scale(1.08); filter: brightness(1.05); }
+#game-select .gc-pop .gc-pop-x:active { transform: scale(.95); }
+
+/* Ikon di kiri "Pilih Game": ubin warna permukaan + bingkai biru, gamepad berwarna dan beranimasi */
+#game-select .game-select-title::before {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234d7cf4'/%3E%3Cstop offset='1' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%3E%3CanimateTransform attributeName='transform' type='rotate' values='-5 12 12;5 12 12;-5 12 12' dur='2.4s' repeatCount='indefinite'/%3E%3Crect x='2' y='5.5' width='20' height='13' rx='5' fill='url(%23g)' fill-opacity='.16' stroke='url(%23g)' stroke-width='2'/%3E%3Cpath d='M7.6 9.4v5.2M5 12h5.2' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round'%3E%3Canimate attributeName='stroke' values='%23f59e0b;%2306b6d4;%23f59e0b' dur='2.4s' repeatCount='indefinite'/%3E%3C/path%3E%3Ccircle cx='17.4' cy='9.9' r='1.05' fill='%23ec4899'%3E%3Canimate attributeName='r' values='.8;1.5;.8' dur='1.6s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='15.4' cy='12' r='1.05' fill='%2310b981'%3E%3Canimate attributeName='r' values='.8;1.5;.8' dur='1.6s' begin='.4s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='19.4' cy='12' r='1.05' fill='%2306b6d4'%3E%3Canimate attributeName='r' values='.8;1.5;.8' dur='1.6s' begin='.8s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='17.4' cy='14.1' r='1.05' fill='%23f59e0b'%3E%3Canimate attributeName='r' values='.8;1.5;.8' dur='1.6s' begin='1.2s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/g%3E%3C/svg%3E") center / 28px 28px no-repeat,
+    var(--surface);
+  box-shadow: 0 0 0 2px rgba(77, 124, 244, .55), 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+}
+html[data-theme='dark'] #game-select .game-select-title::before {
+  box-shadow: 0 0 0 2px rgba(147, 197, 253, .65), 0 0 14px rgba(147, 197, 253, .4), 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+}
+@media (max-width: 640px) {
+  #game-select .game-select-title::before { width: 32px; height: 32px; border-radius: 11px; background-size: 20px 20px, auto; }
+}
+
+/* Skor Terbaik: ikon dalam lencana putih (kiri) + angka putih tebal (kanan), ubin gradien senja mengilap */
+.gc-rk-skor {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 14px 3px 4px;
+  border: 1.5px solid rgba(255, 255, 255, .7);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(135deg, #ff8a3d 0%, #ff4d6d 55%, #d9269d 100%);
+  box-shadow: 0 4px 12px rgba(255, 77, 109, .45), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.gc-rk-skor .gc-rk-ico,
+html[data-theme='dark'] .gc-rk-skor .gc-rk-ico {
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #ffe9ef);
+  box-shadow: 0 2px 6px rgba(120, 20, 60, .4), inset 0 0 0 2px #fff;
+  filter: none;
+  animation: gc-skor-pop 2.4s ease-in-out infinite;
+}
+.gc-rk-skor .gc-rk-val {
+  min-width: 22px;
+  margin: 0;
+  padding: 0 0 0 9px;
+  border: 0;
+  border-left: 1.5px solid rgba(255, 255, 255, .55);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -.3px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(120, 20, 60, .55);
+}
+.gc-rk-skor::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+  animation: gc-skor-shine 3.2s ease-in-out infinite;
+}
+@keyframes gc-skor-shine { 0%, 55% { transform: translateX(-120%) skewX(-20deg); } 100% { transform: translateX(320%) skewX(-20deg); } }
+@keyframes gc-skor-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+html[data-theme='dark'] .gc-rk-skor {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .35), 0 4px 16px rgba(255, 77, 109, .6), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-rk-skor::after,
+  .gc-rk-skor .gc-rk-ico,
+  html[data-theme='dark'] .gc-rk-skor .gc-rk-ico { animation: none; }
+}
+@media (max-width: 640px) {
+  .gc-rk-skor { gap: 5px; padding: 2px 9px 2px 3px; border-radius: 12px; }
+  .gc-rk-skor .gc-rk-ico,
+  html[data-theme='dark'] .gc-rk-skor .gc-rk-ico { width: 26px; height: 26px; padding: 3px; }
+  .gc-rk-skor .gc-rk-val { padding-left: 6px; font-size: 16px; }
+}
+
+/* Mahkota menggantikan piala: tanpa latar kotak */
+.gc-trophy { width: 36px; height: 36px; border-radius: 0; background: none; box-shadow: none; }
+.gc-trophy svg { width: 34px; height: 34px; filter: drop-shadow(0 2px 3px rgba(201, 143, 31, .45)); }
+@media (max-width: 640px) {
+  .gc-trophy { width: 28px; height: 28px; }
+  .gc-trophy svg { width: 26px; height: 26px; }
+}

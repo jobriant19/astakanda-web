@@ -1807,6 +1807,7 @@ function hideLoading(){
     if (m) m.classList.add('hidden');
 }
 
+let rekorCache = null; // rekor terakhir yang berhasil diambil, dipakai agar start() berikutnya tidak menunggu jaringan
 let startGen = 0; // menjaga jika "Mulai Main" tak sengaja terpicu 2x beruntun
 
 async function start(config){
@@ -1837,10 +1838,11 @@ async function start(config){
         .then((r) => r.json())
         .then((rows) => (rows || []).find((r) => String(r.nama).toLowerCase() === namaPemain().toLowerCase()))
         .then((me) => (me ? me.skor_tertinggi : 0))
-        .catch(() => 0);
+        .catch(() => 0)
+        .then((v) => (rekorCache = v));
 
     await ensureAssets((done, total) => { if (perluLoading) setLoadingProgress((done / total) * 100); });
-    const rekor = await rekorPromise;
+    const rekor = rekorCache !== null ? rekorCache : await rekorPromise; // sudah pernah dimuat: langsung tampil
     if (gen !== startGen) return; // ada start() lain yang lebih baru, batalkan yang ini
     if (perluLoading) setLoadingProgress(100);
 
@@ -1858,6 +1860,7 @@ async function start(config){
     state.lastFrameTime = state.startTime;
     needRelease = false; lastAnswerLabel = null; resetAnswerTracking();
     el('dino-rekor').textContent = rekor;
+    rekorPromise.then((v) => { if (gen === startGen) el('dino-rekor').textContent = v; });
     updateHud();
     // Gambar 1 frame arena sebelum layar ditampilkan supaya begitu terlihat,
     // arenanya sudah terisi penuh (bukan kosong sesaat).
@@ -2039,8 +2042,36 @@ const UI = () => window.AstaKandaGameUI;
 el('dino-btn-ulangi').addEventListener('click', () => { el('game-dino-result').classList.add('hidden'); start(cfgLast); });
 el('dino-btn-settings').addEventListener('click', () => { hentikan(); UI().showDinoSetup(); });
 el('dino-btn-keluar').addEventListener('click', bukaKonfirmasiKeluar);
-el('dino-btn-leaderboard').addEventListener('click', () => { hentikan(); UI().showDinoLeaderboard(); });
-el('dino-btn-leaderboard-2').addEventListener('click', () => { el('game-dino-result').classList.add('hidden'); UI().showDinoLeaderboard(); });
+// Tombol Pengaturan di layar main: tambah teks
+el('dino-btn-settings').classList.add('game-play-icon-btn--wide');
+el('dino-btn-settings').insertAdjacentHTML('beforeend', '<span>Pengaturan</span>');
+
+// Buka Leaderboard + pasang tombol "Kembali" (di kiri Pengaturan) yang mengarah ke Dino Attack
+function bukaLeaderboardDino() {
+    UI().showDinoLeaderboard();
+    // shortcut: topbar leaderboard dicari lewat tombol aktif "Leaderboard", upgrade bila markup game.js berubah
+    const aktif = document.querySelector('#game-dino-leaderboard .game-play-icon-btn--active');
+    const wadah = aktif && aktif.parentElement;
+    if (!wadah) return;
+    const lama = wadah.querySelector('#dino-btn-kembali');
+    if (lama) lama.remove();
+    const pengaturan = wadah.firstElementChild;
+    if (pengaturan && !pengaturan.querySelector('span')) {
+        pengaturan.classList.add('game-play-icon-btn--wide');
+        pengaturan.insertAdjacentHTML('beforeend', '<span>Pengaturan</span>');
+    }
+    const kembali = document.createElement('button');
+    kembali.type = 'button';
+    kembali.id = 'dino-btn-kembali';
+    kembali.className = 'game-play-icon-btn game-play-icon-btn--wide';
+    kembali.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg><span>Kembali</span>';
+    kembali.addEventListener('click', () => start(cfgLast));
+    wadah.insertBefore(kembali, wadah.firstElementChild);
+    // Klik tombol apa pun di topbar = keluar dari leaderboard, jadi Kembali dilepas
+    wadah.addEventListener('click', () => setTimeout(() => kembali.remove(), 0), { capture: true, once: true });
+}
+el('dino-btn-leaderboard').addEventListener('click', () => { hentikan(); bukaLeaderboardDino(); });
+el('dino-btn-leaderboard-2').addEventListener('click', () => { el('game-dino-result').classList.add('hidden'); bukaLeaderboardDino(); });
 el('dino-btn-ganti-pemain').addEventListener('click', () => { el('game-dino-result').classList.add('hidden'); hentikan(); UI().showSelect(); });
 
 // ---------------- Nama Pemain di "Atur Permainan" (di atas Tingkat Kesulitan) ----------------
