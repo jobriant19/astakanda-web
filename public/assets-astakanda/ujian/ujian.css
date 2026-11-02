@@ -172,8 +172,7 @@
 .modal-icon-tambah { background: linear-gradient(145deg, #d7f7e6, #f2fff8) !important; }
 .modal-icon-tambah svg { stroke: var(--tab-belajar) !important; }
 
-/* ---------- Layar 2: Ujian berlangsung ---------- */
-.ujian-stats-row { display: flex; gap: 8px; }
+/* ---------- Layar 2 & 3: kartu statistik + warna feedback (markup dibuat ujian.js) ---------- */
 .stat-card {
   flex: 1;
   min-width: 0;
@@ -191,49 +190,8 @@
 .stat-good .stat-value { color: var(--tab-belajar); }
 .stat-bad .stat-value { color: var(--tab-riwayat); }
 
-.ujian-progress-track { width: 100%; }
-.ujian-progress-fill { background: var(--tab-ujian); }
-
-.ujian-question {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  text-align: center;
-  padding: 12px;
-}
-.ujian-question-label { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--ink-500); text-transform: uppercase; }
-.ujian-question-target {
-  font-size: clamp(42px, 9vh, 88px);
-  font-weight: 800;
-  line-height: 1;
-  color: var(--ink-900);
-}
-.ujian-question-feedback { font-size: 13.5px; font-weight: 800; min-height: 18px; }
 .ujian-question-feedback.is-correct { color: var(--tab-belajar); }
 .ujian-question-feedback.is-skip { color: var(--tab-riwayat); }
-
-.ujian-actions { display: flex; gap: 10px; }
-.ujian-actions button { flex: 1; padding: 11px; font-weight: 700; }
-
-/* ---------- Layar 3: Hasil ---------- */
-.ujian-result-head { text-align: center; }
-.ujian-result-emoji { font-size: 40px; line-height: 1; display: block; margin-bottom: 4px; }
-.ujian-result-title { font-size: 19px; font-weight: 800; color: var(--ink-900); }
-.ujian-result-sub { font-size: 12.5px; color: var(--ink-500); font-weight: 500; margin-top: 2px; }
-
-.ujian-result-score {
-  align-self: center;
-  padding: 14px 28px;
-  border-radius: 18px;
-  font-size: 34px;
-  font-weight: 800;
-  color: var(--ink-900);
-}
-.ujian-result-score-unit { font-size: 15px; font-weight: 700; color: var(--ink-500); }
 
 /* =====================================================================
    Atur Soal (mode Custom) + feedback Benar/Salah berikon + dark theme
@@ -298,18 +256,6 @@
 .ujian-set-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--ink-900); }
 .ujian-set-label svg { width: 14px; height: 14px; color: var(--ink-500); }
 
-.ujian-set-chips { display: flex; flex-wrap: wrap; gap: 7px; }
-.uj-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  border: none; cursor: pointer; padding: 7px 12px; border-radius: 999px;
-  font-size: 12.5px; font-weight: 700; color: var(--ink-700);
-  background: var(--surface);
-  box-shadow: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
-}
-.uj-chip svg { width: 13px; height: 13px; opacity: 0; } /* lebar tetap, chip tidak "loncat" */
-.uj-chip.is-on { background: var(--tab-belajar); color: #fff; }
-.uj-chip.is-on svg { opacity: 1; }
-
 .ujian-set-seg { display: flex; gap: 8px; }
 .uj-seg {
   flex: 1; min-width: 0;
@@ -346,7 +292,7 @@
 .ujian-set-ok:disabled { opacity: .45; cursor: not-allowed; }
 
 /* Feedback Benar / Salah (tanpa emoji, pakai ikon) */
-.ujian-question-feedback { display: flex; align-items: center; justify-content: center; min-height: 30px; }
+.ujian-question-feedback { display: flex; align-items: center; justify-content: center; min-height: 30px; font-size: 13.5px; font-weight: 800; }
 .fb-chip {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 4px 14px 4px 5px; border-radius: 999px;
@@ -371,15 +317,13 @@
    !important dipakai karena saya tidak melihat aturan dark di style.css.
    --------------------------------------------------------------------- */
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
-  .ujian-start-title, .ujian-howto-title, .ujian-diff-label, .ujian-question-target,
-  .ujian-result-title, .ujian-result-score, .ujian-preview b, .inline-ico,
+  .ujian-start-title, .ujian-howto-title, .ujian-diff-label, .ujian-preview b, .inline-ico,
   .ujian-set-title, .ujian-set-label, .ujian-set-info b, .ujian-set-btn-text b, .stat-value
 ) { color: #f4f7fb !important; }
 
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
   .ujian-start-sub, .ujian-howto-list li, .ujian-field, .ujian-field span, .field-ico,
-  .stat-label, .ujian-question-label, .ujian-result-sub, .ujian-result-score-unit,
-  .ujian-preview, .ujian-set-sub, .ujian-set-btn-text small, .ujian-set-label svg, .ujian-set-info
+  .stat-label, .ujian-preview, .ujian-set-sub, .ujian-set-btn-text small, .ujian-set-label svg, .ujian-set-info
 ) { color: #c3ccda !important; }
 
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .stat-good .stat-value { color: #4ade80 !important; }
@@ -387,8 +331,7 @@
 
 /* Kartu & kolom input: latar sedikit lebih terang + cincin tipis (tanpa mengubah ukuran) */
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) :is(
-  .ujian-howto, .ujian-preview, .stat-card, .ujian-question, .ujian-result-score,
-  .ujian-set-info, .ujian-field input
+  .ujian-howto, .ujian-preview, .stat-card, .ujian-set-info, .ujian-field input
 ) {
   background: rgba(255, 255, 255, .07) !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18) !important;
@@ -400,7 +343,7 @@
 
 /* Tombol/chip yang belum aktif */
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode)
-  :is(.diff-chip, .uj-chip, .uj-seg, .ujian-set-btn, .ujian-set-cancel, #ujian-btn-lewati, #ujian-btn-selesai):not(.is-active):not(.is-on) {
+  :is(.diff-chip, .uj-seg, .ujian-set-btn, .ujian-set-cancel, #ujian-btn-lewati, #ujian-btn-selesai):not(.is-active):not(.is-on) {
   background: rgba(255, 255, 255, .08) !important;
   color: #e6ebf3 !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22) !important;
@@ -531,6 +474,31 @@ html[data-theme='dark'] .ujian-set-card .bh-search input {
   box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
 }
 
+/* Jenis bahasa isyarat (chip berwarna per bahasa; --vh = hue dari ujian.js) + feedback berbagi satu slot */
+.uj2-q-info { display: grid; justify-items: center; align-items: center; max-width: 100%; }
+.uj2-q-info > * { grid-area: 1 / 1; }
+.uj2-q-info:has(.fb-chip) .uj2-q-variant { visibility: hidden; }   /* feedback menggantikan chip sesaat */
+.uj2-q-variant {
+  --vh: 210;
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  padding: 4px 14px 4px 5px; border-radius: 999px;
+  font-size: 13px; font-weight: 800; letter-spacing: .4px;
+  color: hsl(var(--vh) 70% 27%);
+  background: linear-gradient(135deg, hsl(var(--vh) 95% 95%), hsl(var(--vh) 90% 87%));
+  box-shadow: inset 0 0 0 1.5px hsl(var(--vh) 70% 68% / .6), 0 3px 8px hsl(var(--vh) 60% 50% / .2);
+}
+.uj2-q-variant[hidden] { display: none; }
+.uj2-q-variant svg {
+  flex: 0 0 auto; box-sizing: content-box; width: 14px; height: 14px; padding: 4px;
+  border-radius: 50%; color: #fff; background: hsl(var(--vh) 75% 46%);
+}
+.uj2-q-variant span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode) .uj2-q-variant {
+  color: hsl(var(--vh) 90% 88%);
+  background: linear-gradient(135deg, hsl(var(--vh) 45% 27%), hsl(var(--vh) 45% 20%));
+  box-shadow: inset 0 0 0 1.5px hsl(var(--vh) 70% 60% / .6);
+}
+
 .uj2-actions { flex: 0 0 auto; display: flex; gap: 10px; }
 .uj2-btn {
   flex: 1; min-width: 0;
@@ -547,8 +515,7 @@ html[data-theme='dark'] .ujian-set-card .bh-search input {
 }
 .uj2-btn-danger  { background: var(--tab-riwayat); color: #fff; }
 .uj2-btn-primary { background: var(--tab-ujian); color: #fff; }
-.uj2-btn-cert    { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
-.uj2-btn .lbl-short { display: none; }
+.uj2-btn-cert    { background: var(--tab-game); color: #fff; }
 
 /* Hasil */
 .uj2-wrap {
@@ -616,16 +583,6 @@ html[data-theme='dark'] .ujian-set-card .bh-search input {
 .uj-ok-ico { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .uj-ok-ico svg { width: 16px; height: 16px; flex: 0 0 auto; }
 
-/* Popup sertifikat */
-.uj-cert-card { max-width: min(96vw, 900px); }
-.uj-cert-view { display: flex; justify-content: center; }
-.uj-cert-view canvas {
-  width: auto; height: auto; max-width: 100%;
-  max-height: calc(100vh - 220px);
-  max-height: calc(100dvh - 220px);
-  border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
-}
-
 /* Dark theme */
 html[data-theme='dark'] :is(.uj2-stat, .uj2-hero, .uj2-result-name, .uj-nama-field, .uj2-progress, .uj2-btn-ghost) {
   background: rgba(255, 255, 255, .07);
@@ -634,3 +591,46 @@ html[data-theme='dark'] :is(.uj2-stat, .uj2-hero, .uj2-result-name, .uj-nama-fie
 html[data-theme='dark'] .uj2-question { background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
 html[data-theme='dark'] .uj2-q-target { background: rgba(255, 255, 255, .09); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2); }
 html[data-theme='dark'] .uj2-score-ring b { background: #1a2130; }
+
+/* Popup Nama Peserta: tampilan seperti Nama Pemain Apple Snake, teks di tengah */
+.uj-nama-field { justify-content: center; padding: 0; }
+.uj-nama-field > svg { display: none; }
+.uj-nama-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+.uj-nama-field input::placeholder { color: var(--ink-500); font-weight: 600; }
+.uj-nama-field:focus-within { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light), 0 0 0 2px var(--tab-ujian); }
+.uj-nama-field.is-invalid { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light), 0 0 0 2px var(--tab-riwayat); }
+html[data-theme='dark'] .uj-nama-field:focus-within { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 0 0 2px var(--tab-ujian); }
+html[data-theme='dark'] .uj-nama-field.is-invalid { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 0 0 2px var(--tab-riwayat); }
+@media (max-width: 640px) {
+  .uj-nama-field input { font-size: 16px; }   /* 16px: iOS tidak memperbesar layar saat fokus */
+}
+
+/* ---------- Tombol Leaderboard (di atas Mulai Ujian) ---------- */
+.ujian-start-actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.ujian-start-actions .ujian-btn-mulai { margin-top: 0; }   /* jarak diatur .ujian-start-actions */
+.ujian-btn-lb {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 11px; border: none; border-radius: 14px; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 800; color: var(--ink-900);
+  background: var(--surface);
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.ujian-btn-lb svg { width: 17px; height: 17px; flex: 0 0 auto; color: #E3A329; }
+.ujian-btn-lb:active { transform: scale(.98); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+.ujian-btn-lb:focus-visible { outline: 2px solid var(--tab-ujian); outline-offset: 2px; }
+ 
+/* Nilai: hijau >= 80, oranye >= 50, merah di bawahnya (dipakai layar Hasil & Leaderboard) */
+[data-tone="good"] { color: var(--tab-belajar); }
+[data-tone="mid"]  { color: var(--tab-ujian); }
+[data-tone="low"]  { color: var(--tab-riwayat); }
+
+html[data-theme='dark'] .ujian-btn-lb { background: rgba(255, 255, 255, .07); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }

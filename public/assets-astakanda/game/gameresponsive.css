@@ -906,3 +906,99 @@ html[data-theme='dark'] .gc-rk-skor {
   .gc-trophy { width: 28px; height: 28px; }
   .gc-trophy svg { width: 26px; height: 26px; }
 }
+
+/* ---------- Pilih Game: semua isi tampil utuh, tidak berdesakan, di semua ukuran ---------- */
+
+/* HP (<= 640px): kiri = medali + tombol Mainkan, kanan = nama, deskripsi, Skor Terbaik */
+@media (max-width: 640px) {
+  #game-select .game-page .game-card {
+    display: grid;
+    grid-template-columns: clamp(78px, 24vw, 92px) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "img  name"
+      "img  desc"
+      "play rekor";
+    column-gap: 10px;
+    row-gap: 4px;
+    align-items: center;
+    padding: 6px 10px;
+  }
+  #game-select .game-page .game-card-info,
+  #game-select .game-page .game-card-foot { display: contents; }
+  #game-select .game-page .game-card-img-wrap {
+    grid-area: img;
+    justify-self: center;
+    align-self: center;
+    width: clamp(56px, 8.5dvh, 64px);
+    height: clamp(56px, 8.5dvh, 64px);
+  }
+  #game-select .game-page .game-card-name  { grid-area: name; align-self: end; min-width: 0; }
+  #game-select .game-page .game-card-desc  { grid-area: desc; align-self: start; min-width: 0; }
+  #game-select .game-page .game-card-rekor { grid-area: rekor; align-self: center; min-width: 0; }
+  #game-select .game-page .game-card-play {
+    grid-area: play;
+    justify-self: stretch;
+    justify-content: center;
+    min-width: 0;
+    height: 30px;
+    padding: 0 4px;
+    gap: 3px;
+    font-size: 10.5px;
+  }
+  #game-select .game-page .gc-trophy { width: 24px; height: 24px; }
+  #game-select .game-page .gc-trophy svg { width: 22px; height: 22px; }
+  #game-select .game-page .gc-rk-skor .gc-rk-ico,
+  html[data-theme='dark'] #game-select .game-page .gc-rk-skor .gc-rk-ico { width: 24px; height: 24px; padding: 3px; }
+}
+
+/* HP kecil (<= 360px): sedikit lebih rapat agar label dan nama tetap utuh */
+@media (max-width: 360px) {
+  #game-select .game-page .game-card { grid-template-columns: 70px minmax(0, 1fr); column-gap: 8px; padding: 6px 8px; }
+  #game-select .game-page .game-card-play { font-size: 9.5px; }
+  #game-select .game-page .gc-rk-label { font-size: 8px; letter-spacing: .5px; }
+  #game-select .game-page .gc-rk-skor { gap: 4px; padding: 2px 7px 2px 3px; }
+  #game-select .game-page .gc-rk-skor .gc-rk-ico,
+  html[data-theme='dark'] #game-select .game-page .gc-rk-skor .gc-rk-ico { width: 22px; height: 22px; padding: 3px; }
+  #game-select .game-page .gc-rk-skor .gc-rk-val { padding-left: 5px; font-size: 14px; }
+}
+
+/* Tablet dan desktop: kartu sempit (3 sampai 5 kartu per halaman) agar label Skor Terbaik tidak terpotong */
+@media (min-width: 641px) {
+  @container (max-width: 300px) {
+    .gc-rk-label { font-size: 9px; letter-spacing: .4px; }
+    .gc-trophy { width: 28px; height: 28px; }
+    .gc-trophy svg { width: 26px; height: 26px; }
+    .gc-rk-skor { gap: 5px; padding: 2px 9px 2px 3px; }
+    .gc-rk-skor .gc-rk-ico,
+    html[data-theme='dark'] .gc-rk-skor .gc-rk-ico { width: 28px; height: 28px; }
+    .gc-rk-skor .gc-rk-val { padding-left: 6px; font-size: 18px; }
+  }
+  @container (max-width: 230px) {
+    .gc-trophy { display: none; }   /* kartu sangat sempit: mahkota disembunyikan, label dan skor tetap utuh */
+  }
+}
+
+/* Pilih Game di HP: judul turun agar bagian atas tidak terpotong, deskripsi 3 baris utuh */
+@media (max-width: 640px) {
+  #game-select { --gc-lines: 3; }
+  #game-select .game-select-title { margin-top: 14px; }   /* ikon dan "Pilih Game" lebih ke bawah */
+  #game-select .game-page { grid-template-rows: repeat(var(--gc-n, 1), minmax(128px, 150px)); }
+  #game-select .game-page .game-card {
+    grid-template-columns: clamp(76px, 21vw, 84px) minmax(0, 1fr);
+    row-gap: 3px;
+    padding: 5px 10px;
+  }
+  #game-select .game-page .game-card-desc {
+    font-size: 10.5px;
+    line-height: 1.3;
+    min-height: calc(var(--gc-lines) * 1.3em);
+  }
+}
+@media (max-width: 360px) {
+  #game-select .game-page .game-card { grid-template-columns: 68px minmax(0, 1fr); padding: 5px 8px; }
+  #game-select .game-page .game-card-desc { font-size: 10px; }
+}
+@media (max-width: 330px) {
+  #game-select .game-page .game-card-desc { font-size: 9.5px; }
+}

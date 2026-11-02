@@ -10,7 +10,7 @@
 
     /* ---------- Tampilan baru: layar Ujian berlangsung, Hasil & popup Nama (ikon SVG, tanpa emoji) ---------- */
   // shortcut: markup 2 layar ini ditulis ulang lewat JS karena panel.blade.php tidak ikut terkirim; upgrade: pindahkan ke panel.blade.php lalu hapus blok ini
-  const IC = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const IC = (d, w = 2) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
   const ICON = {
     clock:   IC('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
     list:    IC('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
@@ -27,11 +27,16 @@
     home:    IC('<path d="m3 11 9-8 9 8M5 10v10h14V10"/>'),
     user:    IC('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
     play:    IC('<path d="m6 4 14 8-14 8V4z"/>'),
+    globe:   IC('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
   };
 
   const statCard = (cls, ico, label, id) =>
     '<div class="uj2-stat ' + cls + '"><span class="uj2-stat-ico">' + ico + '</span>' +
     '<span class="uj2-stat-txt"><small>' + label + '</small><b id="' + id + '">0</b></span></div>';
+
+  // Tombol aksi layar Ujian & Hasil (cls: ghost | danger | primary | cert)
+  const btn = (id, cls, ico, txt) =>
+    '<button type="button" id="' + id + '" class="uj2-btn uj2-btn-' + cls + '">' + ico + '<span>' + txt + '</span></button>';
 
   (function bangunLayar() {
     const live = document.getElementById('ujian-live');
@@ -46,13 +51,16 @@
       '</div>' +
       '<div class="uj2-progress"><i id="ujian-progress-fill"></i></div>' +
       '<div class="uj2-question">' +
-        '<span class="uj2-q-badge">' + ICON.hand + 'Peragakan gestur untuk</span>' +
+        '<span class="uj2-q-badge">' + ICON.hand + 'Peragakan gestur</span>' +
         '<div class="uj2-q-target" id="ujian-question-target">-</div>' +
-        '<div class="ujian-question-feedback" id="ujian-question-feedback"></div>' +
+        '<div class="uj2-q-info">' +
+          '<div class="uj2-q-variant" hidden>' + ICON.globe + '<span id="ujian-question-variant"></span></div>' +
+          '<div class="ujian-question-feedback" id="ujian-question-feedback"></div>' +
+        '</div>' +
       '</div>' +
       '<div class="uj2-actions">' +
-        '<button type="button" id="ujian-btn-lewati" class="uj2-btn uj2-btn-ghost">' + ICON.skip + '<span>Lewati Soal</span></button>' +
-        '<button type="button" id="ujian-btn-selesai" class="uj2-btn uj2-btn-danger">' + ICON.flag + '<span>Akhiri Ujian</span></button>' +
+        btn('ujian-btn-lewati', 'ghost', ICON.skip, 'Lewati Soal') +
+        btn('ujian-btn-selesai', 'danger', ICON.flag, 'Akhiri Ujian') +
       '</div>';
 
     if (hasil) hasil.innerHTML =
@@ -72,10 +80,9 @@
           statCard('uj2-stat-bad', ICON.x, 'Salah', 'ujian-result-salah') +
         '</div>' +
         '<div class="uj2-actions">' +
-          '<button type="button" id="ujian-btn-sertifikat" class="uj2-btn uj2-btn-cert">' + ICON.award + '<span>Sertifikat</span></button>' +
-          '<button type="button" id="ujian-btn-ulangi" class="uj2-btn uj2-btn-primary">' + ICON.refresh + '<span>Ulangi</span></button>' +
-          '<button type="button" id="ujian-btn-kembali" class="uj2-btn uj2-btn-ghost">' + ICON.home +
-            '<span class="lbl-long">Kembali ke Awal</span><span class="lbl-short">Awal</span></button>' +
+          btn('ujian-btn-sertifikat', 'cert', ICON.award, 'Sertifikat') +
+          btn('ujian-btn-ulangi', 'primary', ICON.refresh, 'Ulangi') +
+          btn('ujian-btn-kembali', 'danger', ICON.home, 'Selesai') +
         '</div>' +
       '</div>';
 
@@ -121,6 +128,7 @@
   const progressFill = document.getElementById('ujian-progress-fill');
   const questionTarget   = document.getElementById('ujian-question-target');
   const questionFeedback = document.getElementById('ujian-question-feedback');
+  const questionVariant  = document.getElementById('ujian-question-variant');
   const btnLewati  = document.getElementById('ujian-btn-lewati');
   const btnSelesai = document.getElementById('ujian-btn-selesai');
 
@@ -147,13 +155,17 @@
   const namaMulai  = document.getElementById('ujian-nama-mulai');
   let namaPeserta = '';
   let aksiNama = null;
-  let lastRiwayat = null;   // hasil ujian terakhir, dipakai untuk sertifikat
+  let lastRiwayat = null;   // hasil ujian terakhir, dipakai untuk sertifikat & riwayat
+
+  const setInvalid = (on) => namaInput.closest('.uj-nama-field')?.classList.toggle('is-invalid', on);
+  function tutupNama() { aksiNama = null; modalNama.classList.add('hidden'); }
 
   function tanyaNama(lanjut) {
     let awal = '';
     try { awal = localStorage.getItem(NAMA_KEY) || ''; } catch (e) {}
     namaInput.value = namaPeserta || awal;
     namaErr.classList.add('hidden');
+    setInvalid(false);
     aksiNama = lanjut;
     modalNama.classList.remove('hidden');
     namaInput.focus();
@@ -161,7 +173,13 @@
   }
   function kirimNama() {
     const n = namaInput.value.replace(/\s+/g, ' ').trim();
-    if (!n) { namaErr.classList.remove('hidden'); namaInput.focus(); return; }
+    if (!n) {   // nama peserta wajib diisi: tampilkan popup peringatan
+      setInvalid(true);
+      const info = window.AstaKandaPeringatan;
+      if (info) info('Nama peserta belum diisi', 'Isi nama peserta terlebih dahulu sebelum memulai ujian.', () => namaInput.focus());
+      else { namaErr.classList.remove('hidden'); namaInput.focus(); }
+      return;
+    }
     namaPeserta = n;
     try { localStorage.setItem(NAMA_KEY, n); } catch (e) {}
     modalNama.classList.add('hidden');
@@ -171,11 +189,11 @@
   }
   namaMulai.addEventListener('click', kirimNama);
   namaInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); kirimNama(); } });
-  namaInput.addEventListener('input', () => namaErr.classList.add('hidden'));
-  namaBatal.addEventListener('click', () => { aksiNama = null; modalNama.classList.add('hidden'); });
-  modalNama.addEventListener('click', (e) => { if (e.target === modalNama) { aksiNama = null; modalNama.classList.add('hidden'); } });
+  namaInput.addEventListener('input', () => { namaErr.classList.add('hidden'); setInvalid(false); });
+  namaBatal.addEventListener('click', tutupNama);
+  modalNama.addEventListener('click', (e) => { if (e.target === modalNama) tutupNama(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modalNama.classList.contains('hidden')) { aksiNama = null; modalNama.classList.add('hidden'); }
+    if (e.key === 'Escape' && !modalNama.classList.contains('hidden')) tutupNama();
   });
 
   const PRESET = {
@@ -523,15 +541,25 @@
     return out;
   }
 
+  // Jenis bahasa isyarat tiap soal: Custom mengikuti pengaturan; selain itu dipilih acak dari bahasa yang punya rekaman soal tsb
+  function bahasaSoal(label) {
+    if (currentDiff === 'custom') return resolveVariant(soalCfg.variant, soalCfg.jenis) || '';
+    const stats = statsBahasa();
+    const ada = Object.keys(stats).filter((v) => stats[v][label] > 0);
+    return ada.length ? ada[Math.floor(Math.random() * ada.length)] : '';
+  }
+  // Warna chip bahasa: satu bahasa selalu satu warna (hue 0-359 dari namanya)
+  const hueBahasa = (nama) => Array.from(nama).reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0);
+
   // ---------------- State ujian berlangsung ----------------
   let questions = [];
+  let questionVariants = [];   // jenis bahasa isyarat tiap soal (sejajar dengan questions)
   let qIndex = 0;
   let benar = 0;
   let salah = 0;
   let totalWaktuDetik = 0;
   let sisaDetik = 0;
   let timerInterval = null;
-  let detectInterval = null;
   let awaitingDetect = false;
   let labelAbaikan = '';   // sisa gestur soal sebelumnya, diabaikan sampai berubah
   let poolLabel = [];      // semua huruf/kata yang valid sebagai jawaban
@@ -540,19 +568,11 @@
   let jawabanDetail = [];
 
   // Feedback Benar/Salah berikon (tanpa emoji)
+  const IKON_X = IC('<path d="M18 6 6 18M6 6l12 12"/>', 3.2);
   const FB = {
-    benar: {
-      cls: 'is-correct', teks: 'Benar',
-      ico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-    },
-    salah: {
-      cls: 'is-skip', teks: 'Salah',
-      ico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-    },
-    lewat: {
-      cls: 'is-skip', teks: 'Salah · Dilewati',
-      ico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-    },
+    benar: { cls: 'is-correct', teks: 'Benar', ico: IC('<path d="M20 6 9 17l-5-5"/>', 3.2) },
+    salah: { cls: 'is-skip', teks: 'Salah', ico: IKON_X },
+    lewat: { cls: 'is-skip', teks: 'Salah · Dilewati', ico: IKON_X },
   };
   function setFeedback(kind) {
     const f = FB[kind];
@@ -584,16 +604,7 @@
       modalSyarat.classList.remove('hidden');
       return;
     }
-    tanyaNama(() => {
-      questions = buildQuestions(pool, soal);
-      qIndex = 0;
-      benar = 0;
-      salah = 0;
-      jawabanDetail = [];
-      totalWaktuDetik = menit * 60;
-      sisaDetik = totalWaktuDetik;
-      startExam();
-    });
+    tanyaNama(() => mulaiBaru(pool, menit, soal));
   });
 
   modalSyaratTutup.addEventListener('click', () => modalSyarat.classList.add('hidden'));
@@ -605,6 +616,16 @@
     const belajarBtn = document.querySelector('.tab-btn[data-tab="belajar"]');
     if (belajarBtn) belajarBtn.click();
   });
+
+  // Susun soal baru lalu mulai ujian (dipakai tombol Mulai & Ulangi)
+  function mulaiBaru(pool, menit, soal) {
+    questions = buildQuestions(pool, soal);
+    questionVariants = questions.map(bahasaSoal);
+    qIndex = benar = salah = 0;
+    jawabanDetail = [];
+    totalWaktuDetik = sisaDetik = menit * 60;
+    startExam();
+  }
 
   function startExam() {
     showScreen(screenLive);
@@ -641,6 +662,12 @@
     questionFeedback.textContent = '';
     questionFeedback.className = 'ujian-question-feedback';
     questionTarget.textContent = questions[qIndex];
+    questionTarget.style.setProperty('--n', String(questions[qIndex]).length);   // dipakai CSS agar soal panjang tidak terpotong
+    const bahasa = questionVariants[qIndex] || '';
+    const chip = questionVariant.parentElement;
+    questionVariant.textContent = bahasa;
+    chip.hidden = !bahasa;
+    chip.style.setProperty('--vh', hueBahasa(bahasa));
     updateStats();
   }
 
@@ -661,7 +688,39 @@
     nextQuestion(500);
   });
 
-  btnSelesai.addEventListener('click', () => endExam());
+  // Pop up konfirmasi Akhiri Ujian (markup & kelas sama dengan pop up peringatan nama peserta)
+  let modalAkhiri = null;
+  function konfirmasiAkhiri() {
+    if (!modalAkhiri) {
+      modalAkhiri = document.createElement('div');
+      modalAkhiri.className = 'apple-confirm hidden';
+      modalAkhiri.setAttribute('role', 'alertdialog');
+      modalAkhiri.setAttribute('aria-modal', 'true');
+      modalAkhiri.innerHTML =
+        '<div class="apple-confirm-card">' +
+          '<div class="apple-confirm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>' +
+          '<div class="apple-confirm-title">Akhiri ujian sekarang?</div>' +
+          '<p class="apple-confirm-text">Ujian dihentikan dan nilai dihitung dari soal yang sudah dijawab.</p>' +
+          '<div class="apple-confirm-actions">' +
+            '<button type="button" class="apple-confirm-btn apple-confirm-btn--ghost" data-aksi="batal">Batal</button>' +
+            '<button type="button" class="apple-confirm-btn apple-confirm-btn--danger" data-aksi="akhiri">Akhiri Ujian</button>' +
+          '</div>' +
+        '</div>';
+      modalAkhiri.addEventListener('click', (e) => {
+        const aksi = e.target.closest('[data-aksi]');
+        if (!aksi && e.target !== modalAkhiri) return;   // klik di dalam kartu
+        modalAkhiri.classList.add('hidden');
+        if (aksi && aksi.dataset.aksi === 'akhiri') endExam();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modalAkhiri.classList.contains('hidden')) modalAkhiri.classList.add('hidden');
+      });
+      document.body.appendChild(modalAkhiri);
+    }
+    modalAkhiri.classList.remove('hidden');
+    modalAkhiri.querySelector('[data-aksi="batal"]').focus();
+  }
+  btnSelesai.addEventListener('click', konfirmasiAkhiri);
 
   // ---------------- Deteksi instan: baca langsung Info Deteksi ----------------
   function labelInfo() {
@@ -699,15 +758,16 @@
   }
 
   function endExam() {
+    if (modalAkhiri) modalAkhiri.classList.add('hidden');   // waktu habis saat pop up terbuka
     clearInterval(timerInterval);
-    clearInterval(detectInterval);
     timerInterval = null;
-    detectInterval = null;
     stopDeteksi();
     questionLocked = true;
 
     const dijawab = benar + salah;
     const nilai = dijawab ? Math.round((benar / dijawab) * 100) : 0;
+    const durasi = Math.max(0, totalWaktuDetik - Math.max(0, sisaDetik));
+if (window.AstaKandaLeaderboardUjian) window.AstaKandaLeaderboardUjian.catat(namaPeserta, nilai, benar, dijawab, durasi);
 
     resultNilai.textContent = nilai;
     resultTotal.textContent = dijawab;
@@ -724,36 +784,27 @@
 
     lastRiwayat = {
       nama_peserta: namaPeserta,
-      nilai: nilai,
-      benar: benar,
-      salah: salah,
+      nilai,
+      benar,
+      salah,
       total_soal: questions.length,
       kesulitan: currentDiff,
       durasi_detik: Math.max(0, totalWaktuDetik - Math.max(0, sisaDetik)),
       created_at: new Date().toISOString(),
     };
 
-    simpanRiwayat(dijawab, nilai);
+    simpanRiwayat();
     showScreen(screenResult);
   }
 
-  function simpanRiwayat(dijawab, nilai) {
+  function simpanRiwayat() {
     const api = window.astaKanda;
     if (!api) return;
-    const durasiDetik = Math.max(0, totalWaktuDetik - Math.max(0, sisaDetik));
+    const { created_at, ...rekap } = lastRiwayat;   // created_at hanya untuk sertifikat
     fetch('/riwayat', {
       method: 'POST',
       headers: api.jsonHeaders(),
-      body: JSON.stringify({
-        nama_peserta: namaPeserta,
-        kesulitan: currentDiff,
-        total_soal: questions.length,
-        benar: benar,
-        salah: salah,
-        nilai: nilai,
-        durasi_detik: durasiDetik,
-        detail: jawabanDetail,
-      }),
+      body: JSON.stringify({ ...rekap, detail: jawabanDetail }),
     })
       .then((r) => { if (r.ok) window.dispatchEvent(new Event('astakanda:riwayat-baru')); })
       .catch(() => {});
@@ -765,284 +816,11 @@
 
   btnUlangi.addEventListener('click', () => {
     const { menit, soal } = updatePreview();
-    const pool = buildPool();
-    questions = buildQuestions(pool, soal);
-    qIndex = 0;
-    benar = 0;
-    salah = 0;
-    jawabanDetail = [];
-    totalWaktuDetik = menit * 60;
-    sisaDetik = totalWaktuDetik;
-    startExam();
+    mulaiBaru(buildPool(), menit, soal);
   });
 
   btnKembali.addEventListener('click', () => {
     clearInterval(timerInterval);
-    clearInterval(detectInterval);
     showScreen(screenStart);
   });
-})();
-
-/* ---------- Sertifikat Ujian (digambar di canvas, diunduh sebagai PNG) ---------- */
-(function () {
-  const W = 1754, H = 1240; // A4 landscape @150dpi
-  const SERIF = 'Georgia, "Times New Roman", serif';
-  const SANS = '"Segoe UI", Roboto, Arial, sans-serif';
-  const LABEL = { mudah: 'Mudah', sedang: 'Sedang', sulit: 'Sulit', custom: 'Custom' };
-  const NAVY = '#1e293b';
-  const GOLD = '#c9962b';
-  const WARNA = { good: '#10b981', mid: '#f59e0b', low: '#f43f5e' };
-  const SVG_AWARD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>';
-  const SVG_DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>';
-
-  let modal = null;
-  let canvas = null;
-  let dataAktif = null;
-
-  const tone = (n) => (n >= 80 ? 'good' : n >= 50 ? 'mid' : 'low');
-  const predikat = (n) => (n >= 80 ? 'SANGAT BAIK' : n >= 50 ? 'BAIK' : 'PESERTA');
-
-  function mmss(detik) {
-    detik = Math.max(0, parseInt(detik, 10) || 0);
-    return String(Math.floor(detik / 60)).padStart(2, '0') + ':' + String(detik % 60).padStart(2, '0');
-  }
-  function tanggal(iso) {
-    const d = new Date(iso);
-    return isNaN(d) ? '-' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-  // teks dengan jarak antar huruf (letterSpacing canvas belum didukung semua browser)
-  function spasi(g, teks, cx, y, jarak) {
-    const huruf = Array.from(teks);
-    const lebar = huruf.reduce((t, h) => t + g.measureText(h).width + jarak, -jarak);
-    let x = cx - lebar / 2;
-    g.textAlign = 'left';
-    huruf.forEach((h) => { g.fillText(h, x, y); x += g.measureText(h).width + jarak; });
-    g.textAlign = 'center';
-  }
-  function kotak(g, x, y, w, h, r) {
-    g.beginPath();
-    g.moveTo(x + r, y);
-    g.arcTo(x + w, y, x + w, y + h, r);
-    g.arcTo(x + w, y + h, x, y + h, r);
-    g.arcTo(x, y + h, x, y, r);
-    g.arcTo(x, y, x + w, y, r);
-    g.closePath();
-  }
-  function segel(g, cx, cy) {
-    const gr = g.createRadialGradient(cx - 20, cy - 20, 10, cx, cy, 80);
-    gr.addColorStop(0, '#f6d777');
-    gr.addColorStop(1, '#b8861b');
-    g.fillStyle = gr;
-    g.beginPath();
-    for (let i = 0; i < 56; i++) {
-      const a = (Math.PI * i) / 28;
-      const r = i % 2 ? 66 : 76;
-      g.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-    }
-    g.closePath();
-    g.fill();
-    g.strokeStyle = 'rgba(255,255,255,.85)';
-    g.lineWidth = 3;
-    g.beginPath();
-    g.arc(cx, cy, 54, 0, Math.PI * 2);
-    g.stroke();
-    g.save();
-    g.translate(cx - 31, cy - 31);
-    g.scale(2.6, 2.6);
-    g.strokeStyle = '#fff';
-    g.lineWidth = 2;
-    g.lineCap = 'round';
-    g.lineJoin = 'round';
-    g.beginPath();
-    g.arc(12, 8, 6, 0, Math.PI * 2);
-    g.stroke();
-    g.stroke(new Path2D('M15.477 12.89 17 22l-5-3-5 3 1.523-9.11'));
-    g.restore();
-  }
-
-  function gambar(d, logo) {
-    canvas.width = W;
-    canvas.height = H;
-    const g = canvas.getContext('2d');
-    const nilai = Math.max(0, Math.min(100, Number(d.nilai) || 0));
-    const aksen = WARNA[tone(nilai)];
-    g.textAlign = 'center';
-    g.textBaseline = 'alphabetic';
-
-    // latar & bingkai
-    const bg = g.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#fffdf7');
-    bg.addColorStop(1, '#fff6e0');
-    g.fillStyle = bg;
-    g.fillRect(0, 0, W, H);
-    g.strokeStyle = GOLD;
-    g.lineWidth = 12;
-    g.strokeRect(36, 36, W - 72, H - 72);
-    g.strokeStyle = NAVY;
-    g.lineWidth = 2;
-    g.strokeRect(66, 66, W - 132, H - 132);
-    g.fillStyle = GOLD;
-    [[36, 36, 0], [W - 36, 36, Math.PI / 2], [W - 36, H - 36, Math.PI], [36, H - 36, Math.PI * 1.5]].forEach((c) => {
-      g.beginPath();
-      g.moveTo(c[0], c[1]);
-      g.arc(c[0], c[1], 84, c[2], c[2] + Math.PI / 2);
-      g.closePath();
-      g.fill();
-    });
-
-    // logo + judul
-    if (logo && logo.naturalWidth) {
-      const lh = 120;
-      const lw = (logo.naturalWidth / logo.naturalHeight) * lh;
-      g.drawImage(logo, (W - lw) / 2, 100, lw, lh);
-    }
-    g.fillStyle = NAVY;
-    g.font = '700 100px ' + SERIF;
-    spasi(g, 'SERTIFIKAT', W / 2, 340, 16);
-    g.fillStyle = aksen;
-    g.font = '700 34px ' + SANS;
-    spasi(g, 'UJIAN BAHASA ISYARAT', W / 2, 398, 10);
-    ['#10b981', '#f59e0b', '#4E86F0', '#f43f5e'].forEach((c, i) => {
-      g.fillStyle = c;
-      g.fillRect((W - 480) / 2 + i * 120, 428, 120, 8);
-    });
-
-    // nama peserta
-    g.fillStyle = '#64748b';
-    g.font = 'italic 400 32px ' + SERIF;
-    g.fillText('Diberikan kepada', W / 2, 505);
-    const nama = String(d.nama_peserta || 'Peserta').trim();
-    let fs = 96;
-    g.font = 'italic 700 ' + fs + 'px ' + SERIF;
-    while (g.measureText(nama).width > 1200 && fs > 40) {
-      fs -= 4;
-      g.font = 'italic 700 ' + fs + 'px ' + SERIF;
-    }
-    g.fillStyle = NAVY;
-    g.fillText(nama, W / 2, 615);
-    const lw2 = Math.max(700, Math.min(1300, g.measureText(nama).width + 120));
-    g.strokeStyle = GOLD;
-    g.lineWidth = 3;
-    g.beginPath();
-    g.moveTo((W - lw2) / 2, 645);
-    g.lineTo((W + lw2) / 2, 645);
-    g.stroke();
-
-    // keterangan
-    g.fillStyle = '#334155';
-    g.font = '400 32px ' + SANS;
-    const total = d.total_soal != null ? ' (' + d.total_soal + ' soal)' : '';
-    g.fillText('telah mengikuti Ujian Bahasa Isyarat tingkat ' + (LABEL[d.kesulitan] || d.kesulitan || '-') + total, W / 2, 710);
-    g.fillText('dengan hasil sebagai berikut', W / 2, 755);
-
-    // kotak hasil
-    const item = [
-      { l: 'NILAI', v: nilai + '/100', c: aksen },
-      { l: 'BENAR', v: String(Number(d.benar) || 0), c: '#10b981' },
-      { l: 'SALAH', v: String(Number(d.salah) || 0), c: '#f43f5e' },
-      { l: 'DURASI', v: mmss(d.durasi_detik), c: NAVY },
-    ];
-    const bw = 300, gap = 30, bx = (W - (4 * bw + 3 * gap)) / 2, by = 795, bh = 140;
-    item.forEach((it, i) => {
-      const x = bx + i * (bw + gap);
-      g.fillStyle = '#ffffff';
-      kotak(g, x, by, bw, bh, 22);
-      g.fill();
-      g.strokeStyle = 'rgba(201,150,43,.6)';
-      g.lineWidth = 3;
-      g.stroke();
-      g.fillStyle = '#64748b';
-      g.font = '700 22px ' + SANS;
-      spasi(g, it.l, x + bw / 2, by + 50, 4);
-      g.fillStyle = it.c;
-      g.font = '800 ' + (it.v.length > 5 ? 54 : 66) + 'px ' + SANS;
-      g.fillText(it.v, x + bw / 2, by + 114);
-    });
-
-    // predikat
-    g.fillStyle = aksen;
-    g.font = '800 36px ' + SANS;
-    spasi(g, 'PREDIKAT: ' + predikat(nilai), W / 2, 998, 6);
-
-    // kaki: tanggal - segel - penyelenggara
-    segel(g, W / 2, 1090);
-    g.strokeStyle = NAVY;
-    g.lineWidth = 2;
-    [[240, 560], [1194, 1514]].forEach((p) => {
-      g.beginPath();
-      g.moveTo(p[0], 1108);
-      g.lineTo(p[1], 1108);
-      g.stroke();
-    });
-    g.fillStyle = NAVY;
-    g.font = '600 30px ' + SERIF;
-    g.fillText(tanggal(d.created_at), 400, 1094);
-    g.font = 'italic 700 38px ' + SERIF;
-    g.fillText('ASTA KANDA', 1354, 1094);
-    g.fillStyle = '#64748b';
-    g.font = '400 22px ' + SANS;
-    g.fillText('Tanggal Ujian', 400, 1142);
-    g.fillText('Penyelenggara Ujian', 1354, 1142);
-  }
-
-  function pastikanModal() {
-    if (modal) return;
-    document.body.insertAdjacentHTML('beforeend',
-      '<div id="modal-ujian-sertifikat" class="ujian-set-modal hidden">' +
-        '<div class="ujian-set-card uj-cert-card" role="dialog" aria-modal="true" aria-labelledby="uj-cert-title">' +
-          '<div class="ujian-set-head"><span class="ujian-set-head-ico">' + SVG_AWARD + '</span>' +
-            '<div><div class="ujian-set-title" id="uj-cert-title">Sertifikat Ujian</div>' +
-            '<div class="ujian-set-sub" id="uj-cert-sub"></div></div></div>' +
-          '<div class="uj-cert-view"><canvas id="uj-cert-canvas" width="1754" height="1240"></canvas></div>' +
-          '<div class="ujian-set-foot">' +
-            '<button type="button" id="uj-cert-tutup" class="ujian-set-cancel">Tutup</button>' +
-            '<button type="button" id="uj-cert-unduh" class="ujian-set-ok uj-ok-ico">' + SVG_DL + 'Unduh PNG</button>' +
-          '</div>' +
-        '</div></div>');
-    modal = document.getElementById('modal-ujian-sertifikat');
-    canvas = document.getElementById('uj-cert-canvas');
-    document.getElementById('uj-cert-tutup').addEventListener('click', tutup);
-    document.getElementById('uj-cert-unduh').addEventListener('click', unduh);
-    modal.addEventListener('click', (e) => { if (e.target === modal) tutup(); });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) tutup();
-    });
-  }
-  function tutup() { modal.classList.add('hidden'); }
-
-  function unduh() {
-    if (!dataAktif) return;
-    const slug = String(dataAktif.nama_peserta || 'peserta').trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'peserta';
-    const simpan = (href) => {
-      const a = document.createElement('a');
-      a.href = href;
-      a.download = 'Sertifikat-Ujian-' + slug + '.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
-    if (canvas.toBlob) {
-      canvas.toBlob((b) => {
-        if (!b) return;
-        const u = URL.createObjectURL(b);
-        simpan(u);
-        setTimeout(() => URL.revokeObjectURL(u), 4000);
-      }, 'image/png');
-    } else {
-      simpan(canvas.toDataURL('image/png'));
-    }
-  }
-
-  function buka(d) {
-    pastikanModal();
-    dataAktif = d;
-    document.getElementById('uj-cert-sub').textContent = (d.nama_peserta || 'Tanpa nama') + ' · Nilai ' + (Number(d.nilai) || 0);
-    modal.classList.remove('hidden');
-    const logo = new Image();
-    logo.onload = () => gambar(d, logo);
-    logo.onerror = () => gambar(d, null);   // logo gagal dimuat: sertifikat tetap dibuat tanpa logo
-    logo.src = '/assets/images/logo.png';
-  }
-
-  window.AstaKandaSertifikatUjian = { buka: buka };
 })();

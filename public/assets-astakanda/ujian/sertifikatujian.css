@@ -1,0 +1,65 @@
+/* =====================================================================
+   ASTA KANDA — sertifikatujian.css
+   Letakkan di: public/assets-astakanda/ujian/sertifikatujian.css
+   Muat SETELAH ujian.css dan ujianresponsive.css (popup memakai kelas dasar
+   .ujian-set-modal / -card / -head / -foot / -ok dari ujian.css).
+   Isi: popup Sertifikat Ujian (tombol X merah, canvas pas layar, tombol PNG + PDF).
+   ===================================================================== */
+
+/* Tinggi di luar canvas: padding modal + padding kartu + judul + tombol + jarak. */
+.uj-cert-card {
+  --uj-cert-chrome: 190px;
+  position: relative;
+  max-width: min(96vw, 900px);
+  overflow: hidden;            /* menimpa overflow-y:auto dasar: popup tanpa scroll */
+}
+.uj-cert-card .ujian-set-head { padding-right: 40px; }   /* ruang untuk tombol X */
+
+/* Tombol X merah, pojok kanan atas */
+.uj-cert-x {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  width: 32px; height: 32px; padding: 0; border: none; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+  background: var(--tab-riwayat, #f43f5e); color: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .3);
+  transition: transform .12s ease;
+}
+.uj-cert-x:active { transform: scale(.92); }
+.uj-cert-x svg { width: 16px; height: 16px; }
+
+/* Canvas selalu utuh: lebar dibatasi oleh lebar kartu DAN tinggi layar (rasio 1754:1240) */
+.uj-cert-view { display: flex; justify-content: center; min-height: 0; }
+.uj-cert-view canvas {
+  width: min(100%, calc((100vh - var(--uj-cert-chrome)) * 1.4145));
+  width: min(100%, calc((100dvh - var(--uj-cert-chrome)) * 1.4145));
+  height: auto;
+  border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+}
+
+.uj-cert-card .ujian-set-foot .ujian-set-ok { white-space: nowrap; min-width: 0; }
+
+/* Tombol unduh: Image biru, PDF merah */
+.uj-cert-card .uj-cert-img { background: #2563eb; color: #fff; }
+.uj-cert-card .uj-cert-pdf { background: #e11d48; color: #fff; }
+
+/* Dark theme: cincin tipis agar tombol X & canvas tetap jelas di latar gelap */
+html[data-theme='dark'] .uj-cert-x { box-shadow: 0 0 0 1px rgba(255, 255, 255, .35), 0 3px 8px rgba(0, 0, 0, .5); }
+html[data-theme='dark'] .uj-cert-view canvas { box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 6px 20px rgba(0, 0, 0, .5); }
+
+/* HP */
+@media (max-width: 640px) {
+  .uj-cert-card { --uj-cert-chrome: 170px; }
+  .uj-cert-x { top: 10px; right: 10px; width: 30px; height: 30px; }
+  .uj-cert-card .ujian-set-head { padding-right: 36px; }
+  .uj-cert-card .ujian-set-foot { gap: 8px; }
+  .uj-cert-card .ujian-set-ok { padding: 10px 6px; font-size: 12.5px; gap: 6px; }
+}
+/* Layar pendek (HP landscape) */
+@media (max-height: 480px) {
+  .uj-cert-card { --uj-cert-chrome: 130px; padding: 10px 12px; gap: 8px; }
+  .uj-cert-card .ujian-set-head-ico { width: 30px; height: 30px; border-radius: 10px; }
+  .uj-cert-card .ujian-set-head-ico svg { width: 16px; height: 16px; }
+  .uj-cert-card .ujian-set-title { font-size: 14px; }
+  .uj-cert-card .ujian-set-ok { padding: 8px 6px; }
+  .uj-cert-x { top: 8px; right: 8px; width: 26px; height: 26px; }
+}

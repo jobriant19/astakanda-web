@@ -124,6 +124,7 @@
     if (!modalWarn) {
       modalWarn = document.createElement('div');
       modalWarn.className = 'apple-confirm hidden';
+      modalWarn.style.zIndex = '3000';   // di atas popup Nama Peserta
       modalWarn.setAttribute('role', 'alertdialog');
       modalWarn.setAttribute('aria-modal', 'true');
       modalWarn.innerHTML =
@@ -156,6 +157,7 @@
     peringatan('Nama pemain belum diisi', teks || 'Isi nama pemain terlebih dahulu sebelum mulai bermain.', () => { if (input) input.focus(); });
   }
   window.AstaKandaNamaWajib = namaWajib;
+  window.AstaKandaPeringatan = peringatan;   // dipakai juga oleh Ujian
   document.addEventListener('input', (e) => { if (e.target.classList) e.target.classList.remove('is-invalid'); });
 
   function showDetail(key) {
@@ -557,7 +559,7 @@
   };
   const ICON_USER = SVG + '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
-  const MAX_PER_PAGE = 5, MIN_W = 220, GAP_X = 20, MIN_H = 122, GAP_Y = 10;
+  const MAX_PER_PAGE = 5, MIN_W = 220, GAP_X = 20, MIN_H = 128, GAP_Y = 10;
   const CACHE_KEY = 'astakanda.gameBest';
   const mobile = window.matchMedia('(max-width: 640px)');
   const dots = document.createElement('div');

@@ -34,6 +34,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/ujian.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/leaderboardujian.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/game.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/apple/apple.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/dino/dino.css') }}">
@@ -42,6 +43,7 @@
   <link rel="stylesheet" href="{{ asset('assets-astakanda/history/riwayat.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/css/responsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/ujianresponsive.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/sertifikatujian.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/gameresponsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/apple/appleresponsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/dino/dinoresponsive.css') }}">
@@ -361,6 +363,8 @@
   </script>
   <script defer src="{{ asset('assets-astakanda/js/app.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/ujian/ujian.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/ujian/leaderboardujian.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/ujian/sertifikatujian.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/sound.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/sertifikat.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/hasil.js') }}"></script>
