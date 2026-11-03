@@ -767,7 +767,7 @@
     const dijawab = benar + salah;
     const nilai = dijawab ? Math.round((benar / dijawab) * 100) : 0;
     const durasi = Math.max(0, totalWaktuDetik - Math.max(0, sisaDetik));
-if (window.AstaKandaLeaderboardUjian) window.AstaKandaLeaderboardUjian.catat(namaPeserta, nilai, benar, dijawab, durasi);
+if (window.AstaKandaLeaderboardUjian) window.AstaKandaLeaderboardUjian.catat(namaPeserta, nilai, benar, dijawab, durasi, currentDiff);
 
     resultNilai.textContent = nilai;
     resultTotal.textContent = dijawab;

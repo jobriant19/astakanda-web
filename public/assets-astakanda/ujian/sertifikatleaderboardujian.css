@@ -1,0 +1,87 @@
+/* =====================================================================
+   ASTA KANDA — sertifikatleaderboardujian.css
+   Letakkan di: public/assets-astakanda/ujian/sertifikatleaderboardujian.css
+   Popup Sertifikat Peringkat Leaderboard Ujian (tombol X merah, canvas pas layar, tombol PNG + PDF).
+   Mandiri: hanya memakai custom properties (--surface, --ink-*, --tab-*) dari style.css.
+   Tumpukan: leaderboard (400) < popup detail (410) < sertifikat (430).
+   ===================================================================== */
+.lbc {
+  --u: 1vh;
+  --lbc-chrome: 196px;            /* tinggi di luar canvas: padding overlay + kartu, judul, tombol, jarak */
+  position: fixed; inset: 0; z-index: 430; box-sizing: border-box; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 12px;
+  background: rgba(15, 23, 42, .6); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  font-family: 'Baloo 2', 'Fredoka', 'Poppins', 'Segoe UI', sans-serif;
+}
+@supports (height: 1dvh) { .lbc { --u: 1dvh; } }
+.lbc.hidden { display: none !important; }
+.lbc *, .lbc *::before, .lbc *::after { box-sizing: border-box; }
+
+.lbc-card {
+  position: relative; width: min(100%, 900px); max-height: 100%; display: flex; flex-direction: column; gap: 12px;
+  padding: 16px; border-radius: 22px; overflow: hidden; background: var(--surface);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .4), 0 0 0 1px rgba(15, 23, 42, .1);
+}
+.lbc-head { display: flex; align-items: center; gap: 10px; padding-right: 40px; flex: 0 0 auto; }
+.lbc-ico {
+  flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; color: #fff;
+  background: linear-gradient(145deg, #F8CB63, #E3A329); box-shadow: 0 3px 8px rgba(227, 163, 41, .45);
+}
+.lbc-ico svg { width: 20px; height: 20px; }
+.lbc-title { min-width: 0; font-size: 17px; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Tombol X merah, pojok kanan atas */
+.lbc-x {
+  position: absolute; top: 14px; right: 14px; z-index: 1; width: 32px; height: 32px; padding: 0; border: none; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; background: var(--tab-riwayat, #f43f5e); color: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .3); transition: transform .12s ease;
+}
+.lbc-x:active { transform: scale(.92); }
+.lbc-x svg { width: 16px; height: 16px; }
+.lbc-x:focus-visible, .lbc-btn:focus-visible { outline: 2px solid var(--tab-ujian, #f59e0b); outline-offset: 2px; }
+
+/* Canvas selalu utuh: lebar dibatasi oleh lebar kartu DAN tinggi layar (rasio 1754:1240) */
+.lbc-view { flex: 0 1 auto; min-height: 0; display: flex; justify-content: center; }
+.lbc-view canvas {
+  width: min(100%, calc((100vh - var(--lbc-chrome)) * 1.4145));
+  width: min(100%, calc((100dvh - var(--lbc-chrome)) * 1.4145));
+  height: auto; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+}
+
+.lbc-foot { flex: 0 0 auto; display: flex; gap: 10px; }
+.lbc-btn {
+  flex: 1 1 0; min-width: 0; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 14px;
+  cursor: pointer; font: inherit; font-size: 14px; font-weight: 800; color: #fff; white-space: nowrap;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, .22); transition: transform .12s ease;
+}
+.lbc-btn:active { transform: scale(.98); }
+.lbc-btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.lbc-img { background: #2563eb; }
+.lbc-pdf { background: #e11d48; }
+
+/* Tema gelap: judul terang + cincin tipis agar tombol X & canvas tetap jelas */
+html[data-theme='dark'] .lbc { background: rgba(0, 0, 0, .72); }
+html[data-theme='dark'] .lbc-card { box-shadow: 0 24px 60px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .24); }
+html[data-theme='dark'] .lbc-title { color: #f8fafc; }
+html[data-theme='dark'] .lbc-x { box-shadow: 0 0 0 1px rgba(255, 255, 255, .35), 0 3px 8px rgba(0, 0, 0, .5); }
+html[data-theme='dark'] .lbc-view canvas { box-shadow: 0 0 0 1px rgba(255, 255, 255, .22), 0 6px 20px rgba(0, 0, 0, .5); }
+
+/* HP */
+@media (max-width: 640px) {
+  .lbc { --lbc-chrome: 176px; padding: 10px; }
+  .lbc-card { padding: 12px; gap: 10px; border-radius: 20px; }
+  .lbc-x { top: 10px; right: 10px; width: 30px; height: 30px; }
+  .lbc-head { padding-right: 36px; }
+  .lbc-foot { gap: 8px; }
+  .lbc-btn { height: 42px; font-size: 12.5px; gap: 6px; }
+}
+/* Layar pendek (HP landscape) */
+@media (max-height: 480px) {
+  .lbc { --lbc-chrome: 130px; padding: 8px; }
+  .lbc-card { padding: 10px 12px; gap: 8px; }
+  .lbc-ico { width: 28px; height: 28px; border-radius: 9px; }
+  .lbc-ico svg { width: 15px; height: 15px; }
+  .lbc-title { font-size: 14px; }
+  .lbc-btn { height: 36px; font-size: 12.5px; }
+  .lbc-x { top: 8px; right: 8px; width: 26px; height: 26px; }
+}

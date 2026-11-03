@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="{{ asset('assets-astakanda/css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/ujian.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/leaderboardujian.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/sertifikatleaderboardujian.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/game.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/apple/apple.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/dino/dino.css') }}">
@@ -364,6 +365,7 @@
   <script defer src="{{ asset('assets-astakanda/js/app.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/ujian/ujian.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/ujian/leaderboardujian.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/ujian/sertifikatleaderboardujian.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/ujian/sertifikatujian.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/sound.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/sertifikat.js') }}"></script>

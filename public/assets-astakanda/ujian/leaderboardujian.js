@@ -114,6 +114,60 @@
         '<svg viewBox="0 0 30 40" class="tt-lh" aria-hidden="true"><path d="M5,40 L9,12 L21,12 L25,40 Z" fill="#ef4444"/><path d="M6,32 L24,32 L22,21 L8,21 Z" fill="#f8fafc"/><rect x="7" y="10" width="16" height="2" fill="#334155"/><rect x="9" y="12" width="12" height="2" fill="#475569"/><rect class="lh-room" x="10" y="4" width="10" height="6"/><circle class="lh-glow" cx="15" cy="7" r="2.5" fill="#fef08a"/><path d="M12,4 L12,10 M15,4 L15,10 M18,4 L18,10" stroke="#475569" stroke-width=".75"/><path d="M8,4 L15,0 L22,4 Z" fill="#ef4444"/><circle cx="15" cy="0" r="1.5" fill="#334155"/></svg>' +
       '</span></button>';
 
+  // Emblem popup detail: 1 = mahkota emas, 2 = medali perak, 3 = perisai perunggu, 4+ = lencana toska (sama untuk semua)
+  const lbStar = (cx, cy, R, r, n) => {
+    const p = [];
+    for (let k = 0; k < n * 2; k++) { const a = (Math.PI * k) / n - Math.PI / 2, d = k % 2 ? r : R; p.push((cx + Math.cos(a) * d).toFixed(1) + ',' + (cy + Math.sin(a) * d).toFixed(1)); }
+    return p.join(' ');
+  };
+  const lbGrad = (id, a, b, c) => '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset=".55" stop-color="' + b + '"/><stop offset="1" stop-color="' + c + '"/></linearGradient></defs>';
+  // Kilau: pita putih miring yang menyapu bentuk emblem (dipotong clipPath), digerakkan oleh CSS (.em-shine)
+  const lbShine = (id, shape) => '<clipPath id="' + id + '">' + shape + '</clipPath><g clip-path="url(#' + id + ')"><g class="em-shine"><rect x="-16" y="-4" width="9" height="72" fill="#fff" opacity=".6" transform="skewX(-20)"/></g></g>';
+  function lbEmblem(i) {
+    if (i === 0) {
+      return '<svg viewBox="0 3 64 54" aria-hidden="true"><defs><linearGradient id="ujEm1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs>' +
+        '<path d="M8 46 4 18l14 12 14-20 14 20 14-12-4 28z" fill="url(#ujEm1)" stroke="#B07A12" stroke-width="2" stroke-linejoin="round"/>' +
+        '<rect x="8" y="46" width="48" height="8" rx="3" fill="#F5B942" stroke="#B07A12" stroke-width="2"/>' +
+        lbShine('ujEm1c', '<path d="M8 46 4 18l14 12 14-20 14 20 14-12-4 28z"/><rect x="8" y="46" width="48" height="8" rx="3"/>') +
+        '<circle class="em-gem" cx="32" cy="38" r="4" fill="#3B82F6"/><circle class="em-gem" style="animation-delay:.5s" cx="19" cy="40" r="3" fill="#EF4444"/><circle class="em-gem" style="animation-delay:1s" cx="45" cy="40" r="3" fill="#EF4444"/></svg>';
+    }
+    if (i === 1) {
+      return '<svg viewBox="0 0 64 64" aria-hidden="true">' + lbGrad('ujEm2', '#FFFFFF', '#C8D1DE', '#8793A6') +
+        '<path d="M13 2h14l10 26-13 3z" fill="#3b82f6"/><path d="M51 2H37L27 28l13 3z" fill="#1d4ed8"/>' +
+        '<circle cx="32" cy="42" r="19" fill="url(#ujEm2)" stroke="#64748b" stroke-width="2"/>' +
+        '<circle cx="32" cy="42" r="13.5" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.6"/>' +
+        '<polygon class="em-pulse" points="' + lbStar(32, 42, 9.5, 4.2, 5) + '" fill="#fff" stroke="#64748b" stroke-width="1.3" stroke-linejoin="round"/>' +
+        lbShine('ujEm2c', '<circle cx="32" cy="42" r="19"/>') + '</svg>';
+    }
+    if (i === 2) {
+      return '<svg viewBox="0 0 64 64" aria-hidden="true">' + lbGrad('ujEm3', '#FBD9B5', '#D58B4A', '#8E4B14') +
+        '<path d="M32 3 55 11v20c0 15-10 25-23 30C19 56 9 46 9 31V11z" fill="url(#ujEm3)" stroke="#7a4519" stroke-width="2.2" stroke-linejoin="round"/>' +
+        '<path d="M32 10 48.5 15.5v15.5c0 10.5-7 18.5-16.5 22.5C22.5 49.5 15.5 41.5 15.5 31V15.5z" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.5" stroke-linejoin="round"/>' +
+        '<polygon class="em-pulse" points="' + lbStar(32, 31, 11, 4.8, 5) + '" fill="#fff" stroke="#7a4519" stroke-width="1.3" stroke-linejoin="round"/>' +
+        lbShine('ujEm3c', '<path d="M32 3 55 11v20c0 15-10 25-23 30C19 56 9 46 9 31V11z"/>') + '</svg>';
+    }
+    return '<svg viewBox="0 0 64 64" aria-hidden="true">' + lbGrad('ujEm4', '#B6F7EE', '#2EC4B6', '#0f766e') +
+      '<path d="M19 40 13 62l10-5 5 6 3-21z" fill="#0f766e"/><path d="M45 40 51 62l-10-5-5 6-3-21z" fill="#0d9488"/>' +
+      '<polygon class="em-spin" points="' + lbStar(32, 27, 26, 22, 16) + '" fill="url(#ujEm4)" stroke="#0f766e" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<circle cx="32" cy="27" r="16" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.6"/>' +
+      '<polygon class="em-pulse" points="' + lbStar(32, 27, 9, 4, 5) + '" fill="#fff" stroke="#0f766e" stroke-width="1.2" stroke-linejoin="round"/>' +
+      lbShine('ujEm4c', '<circle cx="32" cy="27" r="22"/>') + '</svg>';
+  }
+  // Angka naik dari 0 (hanya bila gerakan tidak dimatikan di perangkat)
+  const lbGerak = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function lbHitung(el, target, ms, tunda) {
+    cancelAnimationFrame(el._raf);
+    if (!lbGerak || !(target > 0)) { el.textContent = target; return; }
+    const t0 = performance.now() + tunda;
+    el.textContent = 0;
+    const f = (t) => {
+      const p = Math.min(1, Math.max(0, (t - t0) / ms));
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) el._raf = requestAnimationFrame(f);
+    };
+    el._raf = requestAnimationFrame(f);
+  }
+
   const lbTone = (n) => (n >= 80 ? 'good' : n >= 50 ? 'mid' : 'low');
   const lbMmss = (d) => Math.floor(d / 60) + ':' + String(d % 60).padStart(2, '0');
   const lbTanggal = (iso) => { const d = new Date(iso); return iso && !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
@@ -178,8 +232,8 @@
       '<div class="uj-lbd-card" data-tier="n" tabindex="-1">' +
         '<button type="button" id="ujian-lbd-x" class="uj-lbd-x" aria-label="Tutup">' + IC_X + '</button>' +
         '<div class="uj-lbd-hero">' +
-          '<div class="uj-lbd-crown" id="ujian-lbd-crown">' + LB_CROWN('ujCrownD') + '</div>' +
-          '<div class="uj-lbd-medal" id="ujian-lbd-medal">1</div>' +
+          '<span class="uj-lbd-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' +
+          '<div class="uj-lbd-emblem" id="ujian-lbd-emblem"></div>' +
           '<div class="uj-lbd-tier" id="ujian-lbd-tier">Juara 1</div>' +
           '<h3 class="uj-lbd-name" id="ujian-lbd-name">-</h3>' +
           '<div class="uj-lbd-sub" id="ujian-lbd-sub"></div>' +
@@ -262,16 +316,15 @@
     const card = lbDet.querySelector('.uj-lbd-card'), salah = Math.max(0, r.total - r.benar);
     const q = (id) => lbDet.querySelector('#ujian-lbd-' + id);
     card.dataset.tier = i < 3 ? String(i + 1) : 'n';
-    q('crown').hidden = i !== 0;
-    q('medal').textContent = i + 1;
+    q('emblem').innerHTML = lbEmblem(i);
     q('tier').textContent = i < 3 ? 'Juara ' + (i + 1) : 'Peringkat ' + (i + 1);
     q('name').textContent = r.nama;
     q('name').title = r.nama;
     q('sub').textContent = 'dari ' + lbRows.length + ' peserta';
-    q('nilai').textContent = r.nilai;
     q('nilai').parentNode.dataset.tone = lbTone(r.nilai);
-    q('benar').textContent = r.benar;
-    q('salah').textContent = salah;
+    lbHitung(q('nilai'), r.nilai, 800, 380);
+    lbHitung(q('benar'), r.benar, 700, 450);
+    lbHitung(q('salah'), salah, 700, 520);
     q('waktu').textContent = isFinite(r.durasi) ? lbMmss(r.durasi) : '-';
     const info = [['Jumlah Soal', r.total + ' soal']];
     if (r.kesulitan) info.unshift(['Tingkat', LABEL[r.kesulitan]]);
