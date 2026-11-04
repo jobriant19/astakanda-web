@@ -186,8 +186,8 @@
   const btnSetupBack   = document.getElementById('game-setup-back');
   const diffChips      = Array.from(document.querySelectorAll('#game-diff-chips .game-chip'));
   const kategoriChips  = Array.from(document.querySelectorAll('#game-kategori-chips .game-chip'));
-  const previewWaktu   = document.getElementById('game-setup-preview-waktu');
-  const previewSoal    = document.getElementById('game-setup-preview-soal');
+  const previewKecepatan = document.getElementById('game-setup-preview-kecepatan');
+  const previewRintangan = document.getElementById('game-setup-preview-rintangan');
   const previewKategori = document.getElementById('game-setup-preview-kategori');
   const btnMulaiMain   = document.getElementById('game-btn-mulai-main');
   const setupNote      = document.getElementById('game-setup-note');
@@ -215,9 +215,9 @@
   })();
 
   const PRESET_DIFF = {
-    mudah:  { menit: 3, soal: 5 },
-    sedang: { menit: 5, soal: 10 },
-    sulit:  { menit: 7, soal: 15 },
+    mudah:  { kecepatan: 'Lambat', rintangan: 'Sedikit' },
+    sedang: { kecepatan: 'Normal', rintangan: 'Sedang' },
+    sulit:  { kecepatan: 'Cepat',  rintangan: 'Banyak' },
   };
   const LABEL_KATEGORI = { alfabet: 'Alfabet', kata: 'Kata', gabungan: 'Gabungan' };
 
@@ -226,8 +226,8 @@
 
   function updateSetupPreview() {
     const p = PRESET_DIFF[gameDiff];
-    previewWaktu.textContent = p.menit;
-    previewSoal.textContent = p.soal;
+    previewKecepatan.textContent = p.kecepatan;
+    previewRintangan.textContent = p.rintangan;
     previewKategori.textContent = LABEL_KATEGORI[gameKategori];
   }
 
@@ -248,7 +248,42 @@
     });
   });
 
+  // ---- Jenis Bahasa Isyarat (default Acak) ----
+  const bahasaSelect = document.getElementById('game-bahasa-select');
+  let gameBahasa = 'acak';
+
+  // shortcut: daftar dibaca dari kartu pop up "Jenis Bahasa Isyarat" (#bahasa-grid); upgrade ke endpoint/API app.js bila daftar tidak lengkap
+  function daftarBahasa() {
+    const grid = document.getElementById('bahasa-grid');
+    const nama = [];
+    if (grid) Array.from(grid.children).forEach((el) => {
+      let t = (el.dataset.nama || el.dataset.name || el.dataset.variant || '').trim();
+      if (!t) {
+        const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let n;
+        while ((n = w.nextNode())) { t = n.nodeValue.trim(); if (t) break; }
+      }
+      if (t && nama.indexOf(t) < 0) nama.push(t);
+    });
+    if (!nama.length) { // cadangan: jenis yang sedang aktif di tab Belajar
+      const aktif = ((document.getElementById('variant-btn-label') || {}).textContent || '').trim();
+      nama.push(aktif || 'BISINDO');
+    }
+    return nama;
+  }
+
+  function isiBahasaSelect() {
+    const daftar = daftarBahasa();
+    bahasaSelect.innerHTML = '';
+    bahasaSelect.add(new Option('Acak', 'acak'));
+    daftar.forEach((n) => bahasaSelect.add(new Option(n, n)));
+    bahasaSelect.value = daftar.indexOf(gameBahasa) >= 0 ? gameBahasa : 'acak';
+    gameBahasa = bahasaSelect.value;
+  }
+  bahasaSelect.addEventListener('change', () => { gameBahasa = bahasaSelect.value; });
+
   function showSetup() {
+    isiBahasaSelect();
     setupNote.classList.add('hidden');
     inputNamaSetup.value = localStorage.getItem('astakanda_player_nama') || '';
     inputNamaSetup.classList.remove('is-invalid');
@@ -264,7 +299,7 @@
     localStorage.setItem('astakanda_player_nama', nama);
     const game = registry.apple;
     if (game && typeof game.start === 'function') {
-      game.start({ kesulitan: gameDiff, kategori: gameKategori });
+      game.start({ kesulitan: gameDiff, kategori: gameKategori, bahasa: gameBahasa });
     } else {
       // Mesin game Apple Snake belum dibuat — tinggal isi apple.js (lihat README)
       setupNote.classList.remove('hidden');
@@ -499,7 +534,7 @@
   document.getElementById('dino-lb-keluar').addEventListener('click', () => konfirmasiKeluar(showSelect));
 
   // Supaya apple.js (mesin game) bisa memicu layar-layar ini juga
-  window.AstaKandaGameUI = { showSelect, showDetail, showNama, showSetup, showLeaderboard, showDinoSetup, showDinoLeaderboard, showScreen };
+  window.AstaKandaGameUI = { showSelect, showDetail, showNama, showSetup, showLeaderboard, showDinoSetup, showDinoLeaderboard, showScreen, daftarBahasa };
 
   // ---------------- Tombol "Mulai" di layar Cara Bermain ----------------
   btnMulai.addEventListener('click', () => {

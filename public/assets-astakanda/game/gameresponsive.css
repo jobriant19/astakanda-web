@@ -772,7 +772,7 @@ html[data-theme='dark'] .gc-rk-ico { filter: drop-shadow(0 0 2px rgba(255, 255, 
 
 /* HP: gambar kecil di atas disembunyikan agar muat bersama tab bar */
 @media (max-width: 640px) and (max-height: 800px) {
-  .app-shell:has(.tab-bar:not(.hidden)) :is(#game-setup, #game-dino-setup) .game-setup-img { display: none; }
+  .app-shell:has(.tab-bar:not(.hidden)) #game-dino-setup .game-setup-img { display: none; }
 }
 
 /* Kolom Nama Pemain Apple Snake: teks di tengah seperti Dino Attack */
@@ -1001,4 +1001,35 @@ html[data-theme='dark'] .gc-rk-skor {
 }
 @media (max-width: 330px) {
   #game-select .game-page .game-card-desc { font-size: 9.5px; }
+}
+
+/* ---------- Atur Permainan Apple Snake: gambar apel (HP) + kolom Jenis Bahasa, tetap 1 layar tanpa scroll ---------- */
+@media (max-width: 640px) {
+  #game-setup .game-setup-img { display: block; width: clamp(30px, 6dvh, 48px); height: clamp(30px, 6dvh, 48px); }
+  #game-setup .game-setup-preview { line-height: 1.35; }
+}
+@media (max-width: 640px) and (max-height: 720px) {
+  .app-shell .main-grid > #panel-game > #game-setup { padding-top: 30px; padding-bottom: 30px; }
+  #game-setup .game-setup-inner { gap: clamp(6px, 1.3dvh, 10px); }
+  #game-setup .game-setup-label { margin-bottom: 4px; }
+  #game-setup .game-chip { padding: 5px 4px; }
+  #game-setup .game-setup-preview { padding: 6px; }
+  #game-setup .game-btn-skin { padding: 7px; }
+  #game-setup .game-btn-mulai { padding: 9px 28px; }
+}
+@media (max-width: 640px) and (max-height: 560px) {
+  #game-setup .game-setup-img { display: none; } /* shortcut: HP sangat pendek, gambar disembunyikan agar tanpa scroll */
+}
+@media (max-width: 380px) {
+  #game-setup .game-setup-preview { font-size: 11px; }
+}
+
+/* Desktop: ruang untuk kolom Jenis Bahasa */
+@media (min-width: 641px) {
+  .app-shell:has(.tab-bar:not(.hidden)) #game-setup .game-setup-inner { gap: 8px; }
+  .app-shell:has(.tab-bar:not(.hidden)) #game-setup .game-setup-img { width: 34px; height: 34px; }
+  .app-shell:has(.tab-bar:not(.hidden)) #game-setup .game-setup-select { padding: 7px 36px; }
+}
+@media (min-width: 1025px) and (max-height: 820px) {
+  #game-setup .game-setup-img { display: none; } /* shortcut: laptop pendek, gambar disembunyikan agar tanpa scroll */
 }

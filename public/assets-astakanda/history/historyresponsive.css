@@ -391,6 +391,7 @@
 .riwayat-modal-cancel { background: var(--surface); color: var(--ink-700); box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light); }
 .riwayat-modal-ok { background: #e11d48; color: #fff; }
 .riwayat-modal-ok:disabled { opacity: .6; cursor: default; }
+.riwayat-modal.hidden { display: none !important; }   /* tanpa ini pop up tidak bisa tertutup karena display:flex di atas */
 
 
 /* ---------- 7. DARK THEME ---------- */

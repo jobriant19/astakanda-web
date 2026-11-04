@@ -31,6 +31,7 @@
     const tgl = r.tanggal && !isNaN(new Date(r.tanggal)) ? String(r.tanggal) : '';
     return {
       nama,
+      id: r.id != null ? String(r.id) : '',
       nilai: Math.round(r.nilai),
       benar: r.benar | 0,
       total: r.total | 0,
@@ -55,27 +56,27 @@
   const lbBacaKey = (key) => { try { const a = JSON.parse(localStorage.getItem(key)); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
   const lbBaca = () => lbRapikan(lbBacaKey(LB_KEY));
   function lbCatat(nama, nilai, benar, total, durasi, kesulitan) {
-    // Infinity tersimpan sebagai null di JSON; dibaca kembali sebagai "tak diketahui"
-    try {
-      localStorage.setItem(LB_KEY, JSON.stringify(lbRapikan(lbBaca().concat({ nama, nilai, benar, total, durasi, kesulitan, tanggal: new Date().toISOString() }))));
-    } catch (e) { /* abaikan */ }
-    if (lbEl) { lbGambarAman(); setTimeout(lbMuatServer, 2500); }   // server menyimpan hasil secara asinkron; segarkan sebentar lagi
+    // Masuk daftar langsung tanpa menunggu server; data server berikutnya menggantikannya (jadi hasil yang dihapus di Riwayat ikut hilang)
+    lbServer = lbRapikan(lbServer.concat({ nama, nilai, benar, total, durasi, kesulitan, tanggal: new Date().toISOString() }));
+    try { localStorage.setItem(LB_SRV, JSON.stringify(lbServer.map(lbBuang))); } catch (e) { /* abaikan */ }
+    if (lbEl) lbGambarAman();
   }
 
   // Riwayat ujian dari server (tab Hasil) ikut jadi sumber peringkat. Disimpan juga di localStorage agar langsung ada saat halaman dibuka.
-  let lbServer = lbRapikan(lbBacaKey(LB_SRV)), lbRows = [], lbTertunda = false, lbMuat = false;
-  const lbSemua = () => lbRapikan(lbBaca().concat(lbServer));
-  const lbBuang = (r) => ({ nama: r.nama, nilai: r.nilai, benar: r.benar, total: r.total, durasi: isFinite(r.durasi) ? r.durasi : null, tanggal: r.tanggal, kesulitan: r.kesulitan });
+  let lbServer = lbRapikan(lbBacaKey(LB_SRV)), lbRows = [], lbTertunda = false, lbMuat = false, lbUlang = false, lbHapus = new Set();
+  const lbSemua = () => lbServer;   // sumber tunggal = riwayat server (data lokal lama dibuang), jadi hasil yang dihapus tidak muncul lagi
+  const lbBuang = (r) => ({ id: r.id, nama: r.nama, nilai: r.nilai, benar: r.benar, total: r.total, durasi: isFinite(r.durasi) ? r.durasi : null, tanggal: r.tanggal, kesulitan: r.kesulitan });
   function lbMuatServer() {
-    if (lbMuat) return;
+    if (lbMuat) { lbUlang = true; return; }   // sedang mengambil: ulangi sesudahnya agar tidak memakai data lama
     lbMuat = true;
-    fetch('/riwayat', { headers: { 'Accept': 'application/json' } })
+    fetch('/riwayat', { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
       .then((r) => r.json())
       .then((a) => {
         if (!Array.isArray(a)) throw new Error('format');
-        const baru = lbRapikan(a.map((x) => {
+        const baru = lbRapikan(a.filter((x) => !lbHapus.has(String(x.id))).map((x) => {
           const benar = Number(x.benar) || 0;
           return {
+            id: x.id,
             nama: String(x.nama_peserta || ''),
             nilai: Number(x.nilai) || 0,
             benar,
@@ -91,7 +92,7 @@
         if (JSON.stringify(baru.map(lbBuang)) !== lama) lbGambarAman();
       })
       .catch(() => { /* gagal: tetap pakai cache & data lokal */ })
-      .then(() => { lbMuat = false; });
+      .then(() => { lbMuat = false; if (lbUlang) { lbUlang = false; lbMuatServer(); } });
   }
 
   const LB_CROWN = (id) =>
@@ -305,7 +306,7 @@
   }
   // Saat layar terbuka, daftar tidak diganti di depan mata (kecuali masih kosong); pembaruan dipasang begitu layar ditutup
   function lbGambarAman() {
-    if (lbTerbuka() && lbRows.length) lbTertunda = true; else lbGambar();
+    if (lbDetTerbuka()) lbTertunda = true; else lbGambar();   // hanya saat popup detail terbuka yang ditunda, agar nomor peringkat di popup tidak bergeser
   }
 
   function lbBukaDetail(i) {
@@ -336,6 +337,7 @@
   }
   function lbTutupDetail() {
     lbDet.classList.add('hidden');
+    if (lbTertunda) lbGambar();
     if (lbDetFokus && lbDetFokus.focus && document.contains(lbDetFokus)) lbDetFokus.focus();
   }
   function lbSertifikat() {
@@ -374,8 +376,29 @@
   });
   // Tab kembali aktif: segarkan data di latar belakang
   document.addEventListener('visibilitychange', () => { if (!document.hidden && lbEl) lbMuatServer(); });
+  // Hasil ujian baru selesai tersimpan di server (dikirim ujian.js): ambil saat itu juga
+  window.addEventListener('astakanda:riwayat-baru', lbMuatServer);
+  // Dikirim riwayat.js saat tombol Hapus ditekan: baris langsung hilang dari leaderboard, lalu disinkronkan dengan server
+  window.addEventListener('astakanda:riwayat-dihapus', (e) => {
+    const id = e.detail && e.detail.id != null ? String(e.detail.id) : '';
+    if (id) {
+      lbHapus.add(id);
+      lbServer = lbServer.filter((r) => r.id !== id);
+      try { localStorage.setItem(LB_SRV, JSON.stringify(lbServer.map(lbBuang))); } catch (err) { /* abaikan */ }
+      lbGambarAman();
+    }
+    lbMuatServer();   // melengkapi hasil terbaik berikutnya milik nama yang sama (bila ada)
+  });
+  // Penghapusan gagal di server: batalkan, baris kembali
+  window.addEventListener('astakanda:riwayat-hapus-gagal', (e) => {
+    if (e.detail && e.detail.id != null) lbHapus.delete(String(e.detail.id));
+    lbMuatServer();
+  });
 
-  function lbInit() { lbBangun(); lbGambar(); lbMuatServer(); }
+  function lbInit() {
+    try { localStorage.removeItem(LB_KEY); } catch (e) { /* abaikan */ }   // buang data lokal lama yang tidak ikut terhapus saat riwayat dihapus
+    lbBangun(); lbGambar(); lbMuatServer();
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', lbInit); else lbInit();
 
   window.AstaKandaLeaderboardUjian = { catat: lbCatat };

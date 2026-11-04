@@ -590,30 +590,34 @@
 
   function jalankanHapus() {
     if (idHapus == null) return;
-    const id = idHapus;
+    const id = idHapus, dariDet = dariDetail;
+    const item = semua.find((x) => String(x.id) === String(id));
+    const posisi = semua.indexOf(item);
     dihapus.add(String(id));   // ditandai dulu: daftar yang sedang dimuat tidak bisa memunculkannya lagi
     simpanDihapus();
     urutMuat++;                // buang respons daftar yang masih dalam perjalanan
-    mOk.disabled = true;
-    mOk.textContent = 'Menghapus…';
-    mErr.classList.add('hidden');
+    tutupModal();              // pop up langsung tertutup, tidak menunggu server (tidak bisa stuck)
+    try {
+      semua = semua.filter((x) => String(x.id) !== String(id));
+      simpanCache(CACHE_KEY, semua);
+      if (dariDet) kembaliKeDaftar();
+      renderList(semua);
+    } catch (e) { /* tampilan gagal diperbarui: pop up tetap sudah tertutup */ }
+    window.dispatchEvent(new CustomEvent('astakanda:riwayat-dihapus', { detail: { id } }));   // leaderboard ujian langsung membuang barisnya
     fetch('/riwayat/' + id, { method: 'DELETE', headers: headerCsrf() })
       .then((r) => { if (!r.ok && r.status !== 404) throw new Error('gagal'); })   // 404 = sudah tidak ada: anggap berhasil
       .then(() => {
         urutMuat++;
-        semua = semua.filter((x) => String(x.id) !== String(id));
-        simpanCache(CACHE_KEY, semua);
-        tutupModal();
-        if (dariDetail) kembaliKeDaftar();
-        renderList(semua);
       })
       .catch(() => {
-        dihapus.delete(String(id));   // gagal dihapus di server: tandai dibatalkan
+        dihapus.delete(String(id));   // gagal dihapus di server: batalkan, kembalikan ke daftar
         simpanDihapus();
-        mOk.disabled = false;
-        mOk.textContent = 'Hapus';
-        mErr.textContent = 'Gagal menghapus. Coba lagi.';
-        mErr.classList.remove('hidden');
+        if (item && !semua.some((x) => String(x.id) === String(id))) {
+          semua.splice(Math.max(0, Math.min(posisi, semua.length)), 0, item);
+          simpanCache(CACHE_KEY, semua);
+          renderList(semua);
+        }
+        window.dispatchEvent(new CustomEvent('astakanda:riwayat-hapus-gagal', { detail: { id } }));
       });
   }
 

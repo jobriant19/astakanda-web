@@ -61,6 +61,10 @@
   const elSpoiler = document.createElement('div'); // spoiler soal berikutnya, tampil di bawah "Benar!"
   elSpoiler.className = 'apple-spoiler';
   elFeedback.after(elSpoiler);
+  const elBahasa = document.createElement('div'); // jenis bahasa isyarat soal, tepat di bawah huruf/kata
+  elBahasa.className = 'apple-bahasa';
+  elTarget.after(elBahasa);
+  let bahasaSoal = []; // jenis bahasa per nomor soal (mode Acak dipilih sekali per soal)
 
   const screenPlay   = document.getElementById('game-play');
   const screenResult = document.getElementById('game-result');
@@ -88,9 +92,9 @@
   const ICON_CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>';
 
   const PRESET = {
-    mudah:  { menit: 3, soal: 5,  tick: 320 },
-    sedang: { menit: 5, soal: 10, tick: 240 },
-    sulit:  { menit: 7, soal: 15, tick: 170 },
+    mudah:  { menit: 3, soal: 5,  tick: 320, obs: 0.6 },  // lambat, rintangan sedikit
+    sedang: { menit: 5, soal: 10, tick: 240, obs: 1 },    // normal
+    sulit:  { menit: 7, soal: 15, tick: 170, obs: 1.5 },  // cepat, rintangan banyak
   };
 
   let cfg = null;
@@ -260,7 +264,10 @@
   let laneRow = 0; // baris jalur lurus awal ular — dilarang untuk obstacle (seperti referensi)
 
   // Kepadatan obstacle sama seperti referensi (10 di grid 20x15), mengikuti luas arena saat ini
-  function jumlahObstacle() { return Math.max(6, Math.round(COLS * ROWS * 0.033)); }
+  function jumlahObstacle() {
+    const dasar = Math.max(6, Math.round(COLS * ROWS * 0.033));
+    return Math.max(3, Math.round(dasar * (PRESET[cfg.kesulitan] || PRESET.mudah).obs));
+  }
 
   function generateObstacles(count, jauh) {
     const forbidden = new Set(snake.map(cellKey));
@@ -654,6 +661,15 @@
   }
 
   // ---------------- Soal & deteksi kamera (sama seperti ujian.js) ----------------
+  function bahasaUntuk(i) {
+    if (!bahasaSoal[i]) {
+      const b = cfg && cfg.bahasa;
+      const daftar = window.AstaKandaGameUI && window.AstaKandaGameUI.daftarBahasa ? window.AstaKandaGameUI.daftarBahasa() : [];
+      bahasaSoal[i] = (b && b !== 'acak') ? b : (daftar.length ? daftar[Math.floor(Math.random() * daftar.length)] : 'BISINDO');
+    }
+    return bahasaSoal[i];
+  }
+
   function nextQuestion() {
     if (qIndex >= questions.length) questions = questions.concat(shuffle(poolSoal)); // soal tak pernah habis
     questionLocked = false;
@@ -661,6 +677,7 @@
     elFeedback.className = 'game-play-question-feedback';
     elSpoiler.textContent = '';
     elTarget.textContent = questions[qIndex];
+    elBahasa.textContent = bahasaUntuk(qIndex);
     elSoal.textContent = 'Soal ' + (qIndex + 1);
   }
 
@@ -752,6 +769,7 @@
     benarCnt = 0; salahCnt = 0; rekorSebelum = 0; lastAnswerLabel = null; clearTimeout(feedbackTimer);
     sisaDetik = 0; totalDetik = 0; // waktu menghitung NAIK, tidak ada batas waktu
     clearInterval(hitungTimer); hitungAktif = false; paused = false;
+    bahasaSoal = [];
     poolSoal = kumpulkanSoal(cfg.kategori);
     spawnApple(false);
     muatSkinDipilih();

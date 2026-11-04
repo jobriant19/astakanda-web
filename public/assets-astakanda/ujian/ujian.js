@@ -161,9 +161,7 @@
   function tutupNama() { aksiNama = null; modalNama.classList.add('hidden'); }
 
   function tanyaNama(lanjut) {
-    let awal = '';
-    try { awal = localStorage.getItem(NAMA_KEY) || ''; } catch (e) {}
-    namaInput.value = namaPeserta || awal;
+    namaInput.value = '';   // selalu kosong: tidak memakai nama ujian sebelumnya
     namaErr.classList.add('hidden');
     setInvalid(false);
     aksiNama = lanjut;
@@ -749,21 +747,8 @@
     nextQuestion(700);   // jeda 700ms hanya agar tulisan Benar/Salah sempat terbaca
   }
 
-  // Gestur asing yang bertahan UNKNOWN_HOLD_MS dianggap salah
-  function cekAsing() {
-    if (!isUnknown()) { clearTimeout(unknownTimer); unknownTimer = null; unknownAbaikan = false; return; }
-    if (unknownAbaikan || unknownTimer) return;
-    unknownTimer = setTimeout(() => {
-      unknownTimer = null;
-      if (questionLocked || !isUnknown()) return;
-      unknownAbaikan = true;
-      catat(false);
-    }, UNKNOWN_HOLD_MS);
-  }
-
   function cekJawaban() {
     if (questionLocked) return;
-    cekAsing();
     const label = labelInfo();
     if (!label) { labelAbaikan = ''; return; }      // tangan lepas / belum ada huruf
     if (label === labelAbaikan) return;              // sisa gestur soal sebelumnya
@@ -824,7 +809,11 @@
     };
 
     showScreen(screenResult);   // tampilkan hasil dulu: kalau penyimpanan gagal, layar tidak ikut macet
-    simpanRiwayat();
+    if (nilai > 0) {   // belum ada jawaban benar / nilai 0: tidak disimpan ke riwayat maupun leaderboard
+      const lb = window.AstaKandaLeaderboardUjian;
+      if (lb) lb.catat(namaPeserta, nilai, benar, total, lastRiwayat.durasi_detik, currentDiff);   // leaderboard langsung update
+      simpanRiwayat();
+    }
   }
 
   function simpanRiwayat() {
