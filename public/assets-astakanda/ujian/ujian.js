@@ -565,6 +565,9 @@
   let poolLabel = [];      // semua huruf/kata yang valid sebagai jawaban
   let infoObserver = null;
   let questionLocked = false;
+  const UNKNOWN_HOLD_MS = 300;    // ms gestur asing bertahan sebelum dianggap salah (0 = langsung; makin besar makin toleran pada gerak tangan)
+  let unknownTimer = null;
+  let unknownAbaikan = false;     // gestur asing sisa soal sebelumnya, diabaikan sampai berubah
   let jawabanDetail = [];
 
   // Feedback Benar/Salah berikon (tanpa emoji)
@@ -659,6 +662,9 @@
     if (qIndex >= questions.length) { endExam(); return; }
     questionLocked = false;
     labelAbaikan = labelInfo();
+    clearTimeout(unknownTimer);
+    unknownTimer = null;
+    unknownAbaikan = isUnknown();
     questionFeedback.textContent = '';
     questionFeedback.className = 'ujian-question-feedback';
     questionTarget.textContent = questions[qIndex];
@@ -700,7 +706,7 @@
         '<div class="apple-confirm-card">' +
           '<div class="apple-confirm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>' +
           '<div class="apple-confirm-title">Akhiri ujian sekarang?</div>' +
-          '<p class="apple-confirm-text">Ujian dihentikan dan nilai dihitung dari soal yang sudah dijawab.</p>' +
+          '<p class="apple-confirm-text">Ujian dihentikan. Soal yang belum dijawab dihitung salah.</p>' +
           '<div class="apple-confirm-actions">' +
             '<button type="button" class="apple-confirm-btn apple-confirm-btn--ghost" data-aksi="batal">Batal</button>' +
             '<button type="button" class="apple-confirm-btn apple-confirm-btn--danger" data-aksi="akhiri">Akhiri Ujian</button>' +
@@ -723,21 +729,19 @@
   btnSelesai.addEventListener('click', konfirmasiAkhiri);
 
   // ---------------- Deteksi instan: baca langsung Info Deteksi ----------------
-  function labelInfo() {
+  const infoText = () => {
     const el = document.querySelector('.info-panel .info-result');
-    const t = el ? el.textContent.trim().toLowerCase() : '';
+    return el ? el.textContent.trim().toLowerCase() : '';
+  };
+  const isUnknown = () => infoText() === 'belum dikenali';   // tangan terdeteksi tapi gestur tidak cocok dengan rekaman manapun
+
+  function labelInfo() {
+    const t = infoText();
     return poolLabel.indexOf(t) !== -1 ? t : '';   // teks "Siap Belajar" dsb. tidak dihitung
   }
 
-  function cekJawaban() {
-    if (questionLocked) return;
-    const label = labelInfo();
-    if (!label) { labelAbaikan = ''; return; }      // tangan lepas / belum ada huruf
-    if (label === labelAbaikan) return;              // sisa gestur soal sebelumnya
-    labelAbaikan = '';
-
-    const target = String(questions[qIndex] || '').trim().toLowerCase();
-    const jawabBenar = label === target;
+  // Catat satu jawaban (benar/salah) lalu lanjut ke soal berikutnya
+  function catat(jawabBenar) {
     if (jawabBenar) benar += 1; else salah += 1;
     jawabanDetail.push({ target: questions[qIndex], hasil: jawabBenar ? 'benar' : 'salah' });
     setFeedback(jawabBenar ? 'benar' : 'salah');
@@ -745,7 +749,31 @@
     nextQuestion(700);   // jeda 700ms hanya agar tulisan Benar/Salah sempat terbaca
   }
 
+  // Gestur asing yang bertahan UNKNOWN_HOLD_MS dianggap salah
+  function cekAsing() {
+    if (!isUnknown()) { clearTimeout(unknownTimer); unknownTimer = null; unknownAbaikan = false; return; }
+    if (unknownAbaikan || unknownTimer) return;
+    unknownTimer = setTimeout(() => {
+      unknownTimer = null;
+      if (questionLocked || !isUnknown()) return;
+      unknownAbaikan = true;
+      catat(false);
+    }, UNKNOWN_HOLD_MS);
+  }
+
+  function cekJawaban() {
+    if (questionLocked) return;
+    cekAsing();
+    const label = labelInfo();
+    if (!label) { labelAbaikan = ''; return; }      // tangan lepas / belum ada huruf
+    if (label === labelAbaikan) return;              // sisa gestur soal sebelumnya
+    labelAbaikan = '';
+    catat(label === String(questions[qIndex] || '').trim().toLowerCase());
+  }
+
   function stopDeteksi() {
+    clearTimeout(unknownTimer);
+    unknownTimer = null;
     if (infoObserver) { infoObserver.disconnect(); infoObserver = null; }
   }
 
@@ -759,18 +787,20 @@
 
   function endExam() {
     if (modalAkhiri) modalAkhiri.classList.add('hidden');   // waktu habis saat pop up terbuka
+    if (!timerInterval) return;                              // sudah diakhiri: cegah hasil tersimpan dua kali
     clearInterval(timerInterval);
     timerInterval = null;
     stopDeteksi();
     questionLocked = true;
 
-    const dijawab = benar + salah;
-    const nilai = dijawab ? Math.round((benar / dijawab) * 100) : 0;
-    const durasi = Math.max(0, totalWaktuDetik - Math.max(0, sisaDetik));
-if (window.AstaKandaLeaderboardUjian) window.AstaKandaLeaderboardUjian.catat(namaPeserta, nilai, benar, dijawab, durasi, currentDiff);
+    // Soal yang belum dijawab (waktu habis / ujian diakhiri) dihitung salah; nilai & total mengikuti seluruh soal
+    const total = questions.length;
+    questions.slice(jawabanDetail.length).forEach((t) => jawabanDetail.push({ target: t, hasil: 'salah' }));
+    salah = total - benar;
+    const nilai = total ? Math.round((benar / total) * 100) : 0;
 
     resultNilai.textContent = nilai;
-    resultTotal.textContent = dijawab;
+    resultTotal.textContent = total;
     resultBenar.textContent = benar;
     resultSalah.textContent = salah;
 
@@ -793,8 +823,8 @@ if (window.AstaKandaLeaderboardUjian) window.AstaKandaLeaderboardUjian.catat(nam
       created_at: new Date().toISOString(),
     };
 
+    showScreen(screenResult);   // tampilkan hasil dulu: kalau penyimpanan gagal, layar tidak ikut macet
     simpanRiwayat();
-    showScreen(screenResult);
   }
 
   function simpanRiwayat() {

@@ -42,6 +42,7 @@
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/hasil.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/game/ladders/ladders.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/history/riwayat.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets-astakanda/history/leaderboardgame.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/css/responsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/ujianresponsive.css') }}">
   <link rel="stylesheet" href="{{ asset('assets-astakanda/ujian/sertifikatujian.css') }}">
@@ -371,10 +372,13 @@
   <script defer src="{{ asset('assets-astakanda/game/sertifikat.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/hasil.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/apple/apple.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/game/dino/gamedino.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/dino/dino.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/game.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/game/ladders/ladders.js') }}"></script>
   <script defer src="{{ asset('assets-astakanda/history/riwayat.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/history/leaderboardgame.js') }}"></script>
+  <script defer src="{{ asset('assets-astakanda/history/sertifikatgame.js') }}"></script>
   <script type="importmap">
   { "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",

@@ -116,8 +116,15 @@
         </div>
       </div>
 
+      <div class="game-setup-group">
+        <div class="game-setup-label">Jenis Bahasa Isyarat</div>
+        <select id="game-bahasa-select" class="game-setup-select" aria-label="Jenis bahasa isyarat">
+          <option value="acak">Acak</option>
+        </select>
+      </div>
+
       <div id="game-setup-preview" class="game-setup-preview neu-inset">
-        <b id="game-setup-preview-waktu">3</b> menit &nbsp;·&nbsp; <b id="game-setup-preview-soal">5</b> soal &nbsp;·&nbsp; <b id="game-setup-preview-kategori">Alfabet</b>
+        Kecepatan <b id="game-setup-preview-kecepatan">Lambat</b> &nbsp;·&nbsp; Rintangan <b id="game-setup-preview-rintangan">Sedikit</b> &nbsp;·&nbsp; <b id="game-setup-preview-kategori">Alfabet</b>
       </div>
 
       <button type="button" id="game-btn-skin" class="neu-btn game-btn-skin">🎨 Ganti Skin</button>

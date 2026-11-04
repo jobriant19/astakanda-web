@@ -343,7 +343,7 @@
 
 /* Tombol/chip yang belum aktif */
 :is([data-theme="dark"], .dark, .dark-theme, .theme-dark, .dark-mode)
-  :is(.diff-chip, .uj-seg, .ujian-set-btn, .ujian-set-cancel, #ujian-btn-lewati, #ujian-btn-selesai):not(.is-active):not(.is-on) {
+  :is(.diff-chip, .uj-seg, .ujian-set-btn, .ujian-set-cancel, #ujian-btn-lewati):not(.is-active):not(.is-on) {
   background: rgba(255, 255, 255, .08) !important;
   color: #e6ebf3 !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22) !important;

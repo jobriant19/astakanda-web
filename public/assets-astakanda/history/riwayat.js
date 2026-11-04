@@ -1,8 +1,8 @@
 /* ASTA KANDA — riwayat.js
  * Tab Hasil: Riwayat Ujian (daftar, detail, hapus, sertifikat) dan Peringkat Game
- * (podium 3 besar + tabel). Semua tampil langsung dari cache/memori, tanpa layar "memuat".
+ * (podium 3 besar + tabel; klik peringkat -> popup detail + sertifikat). Semua tampil langsung dari cache/memori, tanpa layar "memuat".
  * Data: GET /riwayat (sudah berisi rincian per soal), DELETE /riwayat/{id}, leaderboard game.
- * Pasangan CSS: history/historyresponsive.css.
+ * Pasangan CSS: history/historyresponsive.css + history/leaderboardgame.css; popup: leaderboardgame.js & sertifikatgame.js.
  */
 // shortcut: hapus satu per satu & tanpa pemeriksaan kepemilikan (riwayat belum per-user); upgrade bila ada login / perlu "hapus semua"
 (function () {
@@ -36,22 +36,29 @@
   const LABEL = { mudah: 'Mudah', sedang: 'Sedang', sulit: 'Sulit', custom: 'Custom' };
   const CACHE_KEY = 'riwayat-cache-v3';
   const RANK_KEY = 'riwayat-rank-v1';
+  const DEL_KEY = 'riwayat-dihapus-v1';
+  // Id riwayat yang sudah dihapus diingat di perangkat ini: respons lama (terlambat) / cache / cache HTTP tidak bisa memunculkannya lagi
+  const dihapus = new Set((function () { try { const a = JSON.parse(localStorage.getItem(DEL_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } })().map(String));
+  const simpanDihapus = () => { try { localStorage.setItem(DEL_KEY, JSON.stringify(Array.from(dihapus).slice(-300))); } catch (e) { /* abaikan */ } };
+  const bersih = (arr) => (Array.isArray(arr) ? arr.filter((x) => !dihapus.has(String(x && x.id))) : arr);
+  let urutMuat = 0;   // penanda permintaan terbaru: respons yang lebih tua dibuang
   // Leaderboard lokal (localStorage, sama dengan yang ditulis ladders.js & hunter-ui.js): dibaca sinkron, jadi instan
   const bacaLokal = (kunci) => { try { return JSON.parse(localStorage.getItem(kunci)); } catch (e) { return null; } };
+  const isoTgl = (v) => { const d = new Date(v); return v && !isNaN(d) ? d.toISOString() : ''; };
   const RANK_SUMBER = {
-    apple: { nama: 'Apple Snake', gambar: '/assets/images/apple.png', url: '/game/leaderboard' },
-    dino:  { nama: 'Dino Attack', gambar: '/assets/images/dino.png',  url: '/game/dino/leaderboard' },
+    apple: { nama: 'Apple Snake', gambar: '/assets/images/apple.png', url: '/game/leaderboard', satuan: 'Skor', kategori: 'Skor tertinggi' },
+    dino:  { nama: 'Dino Attack', gambar: '/assets/images/dino.png',  url: '/game/dino/leaderboard', satuan: 'Skor', kategori: 'Skor tertinggi' },
     ladders: {
-      nama: 'Snakes & Ladders', gambar: '/assets/images/ladders.png',   // peringkat = jumlah kemenangan
+      nama: 'Snakes & Ladders', gambar: '/assets/images/ladders.png', satuan: 'Kemenangan', kategori: 'Jumlah kemenangan',   // peringkat = jumlah kemenangan
       lokal: () => Object.values(bacaLokal('astakanda_ladders_menang') || {})
         .sort((a, b) => (b.menang - a.menang) || (a.terakhir - b.terakhir))
-        .map((r) => ({ nama: String(r.nama || 'Pemain'), skor: Number(r.menang) || 0 }))
+        .map((r) => ({ nama: String(r.nama || 'Pemain'), skor: Number(r.menang) || 0, tanggal: isoTgl(r.terakhir) }))
         .filter((r) => r.skor > 0),
     },
     hunter: {
-      nama: 'Hornet Hunter', gambar: '/assets/images/hornet.png',        // peringkat = skor tertinggi
+      nama: 'Hornet Hunter', gambar: '/assets/images/hornet.png', satuan: 'Skor', kategori: 'Skor tertinggi',        // peringkat = skor tertinggi
       lokal: () => (Array.isArray(bacaLokal('astakanda.hunterBoard')) ? bacaLokal('astakanda.hunterBoard') : [])
-        .map((r) => ({ nama: String(r.nama || 'Pemain'), skor: Number(r.skor) || 0 }))
+        .map((r) => ({ nama: String(r.nama || 'Pemain'), skor: Number(r.skor) || 0, tanggal: r.tanggal || '' }))
         .filter((r) => r.skor > 0)
         .sort((a, b) => b.skor - a.skor),
     },
@@ -343,6 +350,10 @@
   function buatKartuPodium(r, rank) {
     const k = document.createElement('div');
     k.className = 'podium-card podium-card--rank' + rank;
+    k.dataset.rank = rank;
+    k.setAttribute('role', 'button');
+    k.tabIndex = 0;
+    k.setAttribute('aria-label', 'Peringkat ' + rank + ', ' + r.nama + '. Buka detail');
     k.innerHTML =
       '<div class="podium-card__crown">' + (rank === 1 ? CROWN : '') + '</div>' +
       '<div class="podium-card__name">' + esc(r.nama) + '</div>' +
@@ -355,6 +366,10 @@
   function buatBarisRank(row) {
     const el = document.createElement('div');
     el.className = 'rk-row';
+    el.dataset.rank = row.rank;
+    el.setAttribute('role', 'button');
+    el.tabIndex = 0;
+    el.setAttribute('aria-label', 'Peringkat ' + row.rank + ', ' + row.nama + '. Buka detail');
     el.innerHTML =
       '<span class="rk-badge">' + row.rank + '</span>' +
       '<span class="rk-nama"><i class="rk-avatar">' + esc((Array.from(row.nama)[0] || '?').toUpperCase()) + '</i><span>' + esc(row.nama) + '</span></span>' +
@@ -363,13 +378,25 @@
   }
   const pagerRank = buatPager(rankList, buatBarisRank, 3);
 
+  // Indikator bawah: jumlah pemain + petunjuk (selalu terlihat, di bawah pembagi halaman)
+  const rankFoot = document.createElement('div');
+  rankFoot.className = 'rk-foot is-wait';
+  rankView.appendChild(rankFoot);
+  let rankTampil = [];   // daftar peringkat yang sedang tampil (urut), dipakai popup detail
+
   function renderRank(gagal) {
     const rows = RANK_SUMBER[gameAktif].lokal ? RANK_SUMBER[gameAktif].lokal() : rankData[gameAktif];
+    rankTampil = rows || [];
+    rankFoot.classList.toggle('is-wait', !rows);   // belum ada data: ruang tetap, tanpa kedipan
+    rankFoot.innerHTML = rankTampil.length
+      ? '<span class="rk-foot-dot"></span><span><b>' + rankTampil.length + '</b> pemain</span><i class="rk-foot-sep"></i>' +
+        '<span class="rk-foot-hint"><span class="rk-foot-long">Ketuk peringkat untuk detail &amp; sertifikat</span><span class="rk-foot-short">Ketuk untuk detail</span></span>'
+      : '<span class="rk-foot-dot is-off"></span><span>Belum ada pemain</span>';
     podiumEl.innerHTML = rows
       ? (rows.length ? '' : pesan('Belum ada skor untuk ' + RANK_SUMBER[gameAktif].nama + '.'))
       : (gagal ? pesan('Peringkat belum bisa dimuat. Coba lagi nanti.') : '');   // belum ada data: kosong, bukan "memuat"
     (rows || []).slice(0, 3).forEach((r, i) => podiumEl.appendChild(buatKartuPodium(r, i + 1)));
-    const sisa = (rows || []).slice(3).map((r, i) => ({ nama: r.nama, skor: r.skor, rank: i + 4 }));
+    const sisa = (rows || []).slice(3).map((r, i) => ({ nama: r.nama, skor: r.skor, tanggal: r.tanggal, rank: i + 4 }));
     rankList.classList.toggle('hidden', !sisa.length);
     pagerRank.bar.classList.toggle('hidden', !sisa.length);
     pagerRank.set(sisa, { reset: true });
@@ -380,6 +407,7 @@
       .map((r) => ({
         nama: String(r.nama || r.name || r.pemain || 'Pemain'),
         skor: num(r.skor_tertinggi != null ? r.skor_tertinggi : (r.skor != null ? r.skor : r.score)),
+        tanggal: r.updated_at || r.created_at || r.tanggal || '',
       }))
       .sort((a, b) => b.skor - a.skor);
 
@@ -433,6 +461,24 @@
     segarkanRank(gameAktif);
   });
 
+  // Klik / Enter / Spasi pada peringkat -> popup detail (+ sertifikat) dari leaderboardgame.js
+  function bukaDetailGame(rank) {
+    const r = rankTampil[rank - 1], s = RANK_SUMBER[gameAktif];
+    if (!r || !window.AstaKandaLeaderboardGame) return;
+    window.AstaKandaLeaderboardGame.buka({
+      game: gameAktif, gameNama: s.nama, gambar: s.gambar, satuan: s.satuan, kategori: s.kategori,
+      peringkat: rank, peserta: rankTampil.length, nama: r.nama, skor: r.skor, skorJuara1: rankTampil[0].skor, tanggal: r.tanggal || '',
+    });
+  }
+  rankView.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-rank]');
+    if (t && rankView.contains(t)) bukaDetailGame(+t.dataset.rank);
+  });
+  rankView.addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && t.matches && t.matches('[data-rank]') && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); bukaDetailGame(+t.dataset.rank); }
+  });
+
   /* ---------- Daftar ---------- */
   function renderList(items) {
     semua = items;
@@ -443,11 +489,14 @@
 
   function muatDaftar() {
     const cache = bacaCache(CACHE_KEY);
-    if (Array.isArray(cache)) renderList(cache);   // tampil langsung dari cache
-    fetch('/riwayat', { headers: { 'Accept': 'application/json' } })
+    if (Array.isArray(cache)) renderList(bersih(cache));   // tampil langsung dari cache
+    const urut = ++urutMuat;
+    fetch('/riwayat', { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
       .then((r) => r.json())
       .then((items) => {
         if (!Array.isArray(items)) throw new Error('format');
+        if (urut !== urutMuat) return;   // ada permintaan lebih baru atau penghapusan sesudah permintaan ini dimulai
+        items = bersih(items);
         if (!dimuat || JSON.stringify(items) !== JSON.stringify(semua)) { renderList(items); simpanCache(CACHE_KEY, semua); }
       })
       .catch(() => { if (!dimuat) renderList([]); });
@@ -542,12 +591,16 @@
   function jalankanHapus() {
     if (idHapus == null) return;
     const id = idHapus;
+    dihapus.add(String(id));   // ditandai dulu: daftar yang sedang dimuat tidak bisa memunculkannya lagi
+    simpanDihapus();
+    urutMuat++;                // buang respons daftar yang masih dalam perjalanan
     mOk.disabled = true;
     mOk.textContent = 'Menghapus…';
     mErr.classList.add('hidden');
     fetch('/riwayat/' + id, { method: 'DELETE', headers: headerCsrf() })
-      .then((r) => { if (!r.ok) throw new Error('gagal'); })
+      .then((r) => { if (!r.ok && r.status !== 404) throw new Error('gagal'); })   // 404 = sudah tidak ada: anggap berhasil
       .then(() => {
+        urutMuat++;
         semua = semua.filter((x) => String(x.id) !== String(id));
         simpanCache(CACHE_KEY, semua);
         tutupModal();
@@ -555,6 +608,8 @@
         renderList(semua);
       })
       .catch(() => {
+        dihapus.delete(String(id));   // gagal dihapus di server: tandai dibatalkan
+        simpanDihapus();
         mOk.disabled = false;
         mOk.textContent = 'Hapus';
         mErr.textContent = 'Gagal menghapus. Coba lagi.';

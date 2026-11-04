@@ -58,6 +58,9 @@
   const elSoal    = document.getElementById('apple-soal-progress');
   const elTarget  = document.getElementById('apple-question-target');
   const elFeedback = document.getElementById('apple-question-feedback');
+  const elSpoiler = document.createElement('div'); // spoiler soal berikutnya, tampil di bawah "Benar!"
+  elSpoiler.className = 'apple-spoiler';
+  elFeedback.after(elSpoiler);
 
   const screenPlay   = document.getElementById('game-play');
   const screenResult = document.getElementById('game-result');
@@ -102,6 +105,7 @@
   let benarCnt = 0, salahCnt = 0, rekorSebelum = 0, totalDetik = 0, lastAnswerLabel = null, feedbackTimer = null, poolSoal = [];
   let paused = false; // true saat pop up konfirmasi keluar terbuka
   let detectObserver = null; // memicu penilaian seketika saat hasil deteksi (app.js) berubah
+  let hitungAktif = false, hitungTimer = null; // hitung mundur 5 detik setelah kembali dari Leaderboard
 
   // ---------------- Ikon SVG (pengganti emoji) ----------------
   const svgIkon = (isi) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + isi + '</svg>';
@@ -193,7 +197,7 @@
     if (batal) batal.focus();
   }
   function tutupKonfirmasi() {
-    paused = false;
+    paused = hitungAktif;
     if (modalKeluar) modalKeluar.classList.add('hidden');
   }
   function keluarKeSelect() {
@@ -258,10 +262,15 @@
   // Kepadatan obstacle sama seperti referensi (10 di grid 20x15), mengikuti luas arena saat ini
   function jumlahObstacle() { return Math.max(6, Math.round(COLS * ROWS * 0.033)); }
 
-  function generateObstacles(count) {
+  function generateObstacles(count, jauh) {
     const forbidden = new Set(snake.map(cellKey));
     for (let x = 0; x < COLS; x++) forbidden.add(x + ',' + laneRow); // ular tak menabrak saat masih lurus
     if (apple) forbidden.add(cellKey(apple));
+    // jauh = true (setelah makan apel emas): jauhi kepala, badan, jalur lurus ular, dan apel baru
+    const m = Math.min(COLS, ROWS);
+    const jUlar = Math.max(4, Math.round(m * 0.4)), jApel = Math.max(3, Math.round(m * 0.3));
+    const head = snake[0];
+    const dekat = (x, y, c, j) => Math.max(Math.abs(x - c.x), Math.abs(y - c.y)) < j;
     const list = [];
     let guard = 0;
     while (list.length < count && guard < 2000) {
@@ -270,6 +279,8 @@
       const y = Math.floor(Math.random() * ROWS);
       const key = x + ',' + y;
       if (forbidden.has(key)) continue;
+      if (jauh && (dekat(x, y, head, jUlar) || (apple && dekat(x, y, apple, jApel))
+        || (dir.x ? y === head.y : x === head.x) || snake.some((s) => dekat(x, y, s, 2)))) continue;
       forbidden.add(key);
       list.push({ x, y, type: OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)] });
     }
@@ -436,8 +447,8 @@
     if (makan) {
       score += 1;
       elSkor.textContent = score;
-      obstacles = generateObstacles(obstacles.length);
       spawnApple(false);
+      obstacles = generateObstacles(obstacles.length, true);
       mode = 'idle';
       nextQuestion();
     } else {
@@ -648,6 +659,7 @@
     questionLocked = false;
     elFeedback.innerHTML = '';
     elFeedback.className = 'game-play-question-feedback';
+    elSpoiler.textContent = '';
     elTarget.textContent = questions[qIndex];
     elSoal.textContent = 'Soal ' + (qIndex + 1);
   }
@@ -678,21 +690,21 @@
           elFeedback.innerHTML = ICON_CHECK + ' Benar!';
           kilat('is-flash-ok');
           elFeedback.className = 'game-play-question-feedback is-correct';
+          if (qIndex >= questions.length) questions = questions.concat(shuffle(poolSoal));
+          elSpoiler.innerHTML = '<span class="apple-spoiler-lbl">Soal berikutnya</span><b class="apple-spoiler-val"></b>';
+          elSpoiler.querySelector('.apple-spoiler-val').textContent = questions[qIndex];
           aktifkanApelEmas();
           mode = 'pursuing';
         } else {
-          // SALAH: soal langsung berganti & apel merah pindah ke posisi baru
+          // SALAH: "Salah" tampil sebentar di soal lama, lalu soal berganti dan tampilannya hilang
           salahCnt += 1;
           perpendekUlar();
           spawnApple(false);
-          nextQuestion();
           elFeedback.innerHTML = ICON_CROSS + ' Salah';
           kilat('is-flash-bad');
           elFeedback.className = 'game-play-question-feedback is-wrong';
           clearTimeout(feedbackTimer);
-          feedbackTimer = setTimeout(() => {
-            if (elFeedback.classList.contains('is-wrong')) { elFeedback.innerHTML = ''; elFeedback.className = 'game-play-question-feedback'; }
-          }, 900);
+          feedbackTimer = setTimeout(() => { if (tickTimer) nextQuestion(); }, 900); // 900 = lama "Salah" terlihat (ms)
         }
       })
       .catch(() => {})
@@ -739,6 +751,7 @@
     score = 0; qIndex = 0; mode = 'idle';
     benarCnt = 0; salahCnt = 0; rekorSebelum = 0; lastAnswerLabel = null; clearTimeout(feedbackTimer);
     sisaDetik = 0; totalDetik = 0; // waktu menghitung NAIK, tidak ada batas waktu
+    clearInterval(hitungTimer); hitungAktif = false; paused = false;
     poolSoal = kumpulkanSoal(cfg.kategori);
     spawnApple(false);
     muatSkinDipilih();
@@ -774,7 +787,7 @@
   }
 
   function hentikanLoop() {
-    clearInterval(tickTimer); clearInterval(timerInterval); clearInterval(detectInterval);
+    clearInterval(tickTimer); clearInterval(timerInterval); clearInterval(detectInterval); clearInterval(hitungTimer); hitungAktif = false;
     if (detectObserver) { detectObserver.disconnect(); detectObserver = null; }
     cancelAnimationFrame(rafId);
     tickTimer = timerInterval = detectInterval = rafId = null;
@@ -847,8 +860,42 @@
   btnSettings.classList.add('game-play-icon-btn--wide');
   btnSettings.insertAdjacentHTML('beforeend', '<span>Pengaturan</span>');
 
+  // Jeda ke Leaderboard: game dibekukan apa adanya (posisi, skor, waktu, soal, apel)
+  function jedaKeLeaderboard() {
+    const lanjut = !!tickTimer; // false bila game sudah game over -> Kembali = mulai ulang
+    if (lanjut) {
+      paused = true;
+      cancelAnimationFrame(rafId);
+      if (window.AstaSound) AstaSound.stopMusic();
+    }
+    bukaLeaderboard(lanjut);
+  }
+
+  // Kembali dari Leaderboard: tampilkan arena lagi, hitung mundur 5 detik di kartu soal, baru lanjut
+  function lanjutDariLeaderboard() {
+    window.AstaKandaGameUI.showScreen(screenPlay);
+    cancelAnimationFrame(rafId); renderLoop();
+    if (window.AstaSound) AstaSound.startMusic();
+    const soal = elTarget.textContent, fbHtml = elFeedback.innerHTML, fbKelas = elFeedback.className, spoiler = elSpoiler.innerHTML;
+    let sisa = 5;
+    hitungAktif = paused = true;
+    elSpoiler.textContent = '';
+    elFeedback.className = 'game-play-question-feedback';
+    elFeedback.textContent = 'Bersiap...';
+    elTarget.textContent = sisa;
+    clearInterval(hitungTimer);
+    hitungTimer = setInterval(() => {
+      sisa -= 1;
+      if (sisa > 0) { elTarget.textContent = sisa; return; }
+      clearInterval(hitungTimer);
+      hitungAktif = false;
+      paused = !!(modalKeluar && !modalKeluar.classList.contains('hidden'));
+      elTarget.textContent = soal; elFeedback.innerHTML = fbHtml; elFeedback.className = fbKelas; elSpoiler.innerHTML = spoiler;
+    }, 1000);
+  }
+
   // Buka Leaderboard + pasang tombol "Kembali" (di kiri Pengaturan) yang mengarah ke Apple Snake
-  function bukaLeaderboard() {
+  function bukaLeaderboard(lanjut) {
     window.AstaKandaGameUI.showLeaderboard();
     // shortcut: topbar leaderboard dicari lewat tombol aktif "Leaderboard", upgrade bila markup game.js berubah
     const aktif = document.querySelector('#game-leaderboard .game-play-icon-btn--active');
@@ -866,12 +913,15 @@
     kembali.id = 'apple-btn-kembali';
     kembali.className = 'game-play-icon-btn game-play-icon-btn--wide';
     kembali.innerHTML = ICON_KEMBALI + '<span>Kembali</span>';
-    kembali.addEventListener('click', () => start(cfg));
+    kembali.addEventListener('click', lanjut ? lanjutDariLeaderboard : () => start(cfg));
     wadah.insertBefore(kembali, wadah.firstElementChild);
-    // Klik tombol apa pun di topbar = keluar dari leaderboard, jadi Kembali dilepas agar tidak bocor ke game lain
-    wadah.addEventListener('click', () => setTimeout(() => kembali.remove(), 0), { capture: true, once: true });
+    // Klik tombol apa pun selain Kembali = keluar dari Leaderboard: Kembali dilepas & game yang dijeda dihentikan
+    wadah.addEventListener('click', (e) => {
+      setTimeout(() => kembali.remove(), 0);
+      if (lanjut && !e.target.closest('#apple-btn-kembali')) hentikanLoop();
+    }, { capture: true, once: true });
   }
-  btnLeaderboard.addEventListener('click', () => { hentikanLoop(); bukaLeaderboard(); });
+  btnLeaderboard.addEventListener('click', jedaKeLeaderboard);
   btnLeaderboard2.addEventListener('click', () => { screenResult.classList.add('hidden'); bukaLeaderboard(); });
   btnGantiPemain.addEventListener('click', () => { screenResult.classList.add('hidden'); hentikanLoop(); window.AstaKandaGameUI.showSelect(); });
 

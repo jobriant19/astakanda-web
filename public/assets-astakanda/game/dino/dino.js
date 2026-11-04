@@ -6,6 +6,7 @@
  *  - Gestur salah  -> label jadi MERAH, rintangan menabrak dino / serangan udara mengenai dino (-1 nyawa).
  *  - Rintangan sampai ke dino tanpa dijawab -> sama seperti salah (-1 nyawa). Nyawa habis = Game Over.
  * Deteksi memakai kamera + /gesture/recognize yang sama dengan Apple Snake & Ujian.
+ * Tampilan sisi kanan (kamera + Info Deteksi) ada di gamedino.js.
  */
 (function () {
   'use strict';
@@ -15,11 +16,12 @@
   function el(id) { return document.getElementById(id); }
   const canvas = () => el('dino-canvas');
   let state = null;
+  const { ICON_CHECK, ICON_CROSS, pindahkanKamera, resetPanel, setDetect, clearDetect, setTarget, setFeedback } = window.AstaKandaGames.dinoSide;
 
   const DIFF_CONFIG = {
-    mudah:  { baseSpeed: 130, spawnGapMin: 900,  spawnGapMax: 1400, scoreMul: 10, airChance: 0.25, label: 'MUDAH' },
-    sedang: { baseSpeed: 190, spawnGapMin: 650,  spawnGapMax: 1050, scoreMul: 15, airChance: 0.35, label: 'SEDANG' },
-    sulit:  { baseSpeed: 260, spawnGapMin: 450,  spawnGapMax: 800,  scoreMul: 20, airChance: 0.45, label: 'SULIT' },
+    mudah:  { baseSpeed: 130, spawnGapMin: 900,  spawnGapMax: 1400, scoreMul: 10, airChance: 0.25 },
+    sedang: { baseSpeed: 190, spawnGapMin: 650,  spawnGapMax: 1050, scoreMul: 15, airChance: 0.35 },
+    sulit:  { baseSpeed: 260, spawnGapMin: 450,  spawnGapMax: 800,  scoreMul: 20, airChance: 0.45 },
   };
   // Setelah dijawab (benar/salah), rintangan dipercepat supaya tidak menunggu lama
   const ANSWER_SPEEDUP = 1.4; // lebih kecil karena kecepatan dasar sudah naik; naiknya dibuat halus (lihat updatePhysics)
@@ -46,11 +48,6 @@ const AIR_WIDTH = { drone: 40, ufo: 40, missile: 50, hornet: 122 };
 // Jarak label kata dari tiap model rintangan udara — beda-beda karena tinggi
 // badannya juga beda (hornet jauh lebih tinggi dari model lain).
 const AIR_LABEL_OFFSET = { drone: 16, ufo: 20, missile: 14, hornet: 70 };
-
-// Lama (ms) menahan tampilan huruf TERAKHIR sebuah kata: BENAR -> kata penuh
-// hijau sejenak sebelum lanjut ke skor/lompat; SALAH -> huruf terakhir merah
-// tertahan lebih lama dari kedipan biasa (260ms), supaya hasilnya terbaca jelas.
-const WORD_RESULT_HOLD_MS = 380;
 
 // ============================================================
 // DINO — sprite PNG animasi jalan (public/assets/images/walk/walk1..240.png)
@@ -368,7 +365,7 @@ function updateEffects(dt, now){
 
 
 // ============================================================
-// Suara: dimatikan (stub) — tempat menyambungkan efek suara bila diperlukan
+// Suara: dimainkan lewat AstaSound bila tersedia (aman jika belum dimuat)
 // ============================================================
 function sfxTyping(){ if (window.AstaSound) AstaSound.play('typing', { gain: 0.5, offset: 0, duration: 0.22 }); }
 function sfxJump(){ if (window.AstaSound) AstaSound.play('jump', { rate: 1.25, gain: 0.55 }); }
@@ -419,13 +416,13 @@ function ensureAssets(onProgress){
 // ============================================================
 // STATE & ATURAN (versi gestur)
 // ============================================================
-function freshState(difficulty, playerName, pool){
+function freshState(difficulty, pool){
     return {
         running: false, finished: false, gameOverPending: false,
-        difficulty, playerName, pool,
+        difficulty, pool,
         score: 0, hearts: 3, clearedCount: 0, correctWords: 0, wrongHits: 0,
         startTime: 0, lastFrameTime: 0,
-        current: null, typedIndex: 0, wrongFlashAt: 0,
+        current: null,
         waitingSpawn: true, recentWords: [],
         lastGroundModel: null, lastAirModel: null,
         jump: { active:false, vy:0, y:0, hanging:false, hangTimer:0, pastApex:false },
@@ -453,7 +450,7 @@ function currentSpeed(){
     return cfg.baseSpeed + Math.min(state.clearedCount * 3, 90); // makin lama makin cepat, dibatasi (sama seperti referensi)
 }
 
-function trySpawn(now){
+function trySpawn(){
     if (state.current || !state.waitingSpawn) return;
     const cfg = DIFF_CONFIG[state.difficulty];
     const type = Math.random() < cfg.airChance ? 'air' : 'ground';
@@ -464,15 +461,13 @@ function trySpawn(now){
         y: type === 'air' ? GROUND_Y - 155 : GROUND_Y - 26,
         resolved: null, answer: null,
         jumped: false, attackTriggered: false, exploded: false,
-        finalizeAt: 0, nextShotAt: 0, spawnedAt: now,
+        finalizeAt: 0, nextShotAt: 0,
     };
-    state.typedIndex = 0;
     state.waitingSpawn = false;
-    resetAnswerTracking();
     setTarget(word);
 }
 
-function scheduleNextSpawn(now){
+function scheduleNextSpawn(){
     const cfg = DIFF_CONFIG[state.difficulty];
     const gap = cfg.spawnGapMin + Math.random() * (cfg.spawnGapMax - cfg.spawnGapMin);
     state.waitingSpawn = false;
@@ -501,15 +496,13 @@ function resolveObstacle(cleared){
         if (!ob.answer) setFeedback(false, 'Terlewat');
     }
     ob.labelHideAt = performance.now() + LABEL_LINGER_MS;
-    state.typedIndex = 0;
     updateHud();
 }
 
 function finalizeObstacle(){
     state.current = null;
-    state.typedIndex = 0;
     setTarget(null);
-    scheduleNextSpawn(performance.now());
+    scheduleNextSpawn();
 }
 
 function loseHeart(){
@@ -693,7 +686,7 @@ function buildLabelBoxCache(boxW, boxH, radius){
 const LABEL_FONT = "'Fredoka', 'Baloo 2', 'Poppins', 'Segoe UI', Arial, sans-serif";
 if (document.fonts && document.fonts.load) document.fonts.load("700 26px 'Fredoka'");
 
-function drawWordLabel(ctx, word, typedIndex, cx, y, now, ob){
+function drawWordLabel(ctx, word, cx, y, ob){
     const correct = !!(ob && ob.answer === 'correct');
     const wrong = !!(ob && ob.answer === 'wrong');
 
@@ -1578,7 +1571,7 @@ function draw(now){
             const halfWidth = (widthMap[ob.model] || 34) / 2;
             const cx = ob.x + halfWidth;
             const labelY = ob.type === 'air' ? ob.y - (AIR_LABEL_OFFSET[ob.model] || 24) : GROUND_Y - 44;
-            drawWordLabel(ctx, ob.word, state.typedIndex, cx, labelY, now, ob);
+            drawWordLabel(ctx, ob.word, cx, labelY, ob);
         }
     }
 
@@ -1589,40 +1582,10 @@ function draw(now){
 // ============================================================
 // DETEKSI GESTUR (kamera + /gesture/recognize) — pengganti input ketik
 // ============================================================
-const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-const ICON_CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>';
-
 let pollTimer = null, awaiting = false;
-let streakLabel = null, streakCount = 0;
+// Setelah menjawab, tangan harus dilepas / ganti gestur dulu sebelum rintangan
+// berikutnya bisa dijawab (lastAnswerLabel = gestur jawaban terakhir).
 let needRelease = false, lastAnswerLabel = null;
-// Latensi 0: dulu gestur harus "ditahan" beberapa kali baca berturut-turut
-// (STREAK_CORRECT=2 / STREAK_WRONG=3) sebelum dianggap valid, supaya tahan
-// transisi tangan — tapi ini membuat respons terasa lambat walau gestur
-// sudah benar. Sekarang keduanya=1: jawaban diproses pada pembacaan
-// PERTAMA yang valid, tanpa jeda tambahan sama sekali.
-const STREAK_CORRECT = 1;
-const STREAK_WRONG = 1;
-
-function resetAnswerTracking(){ streakLabel = null; streakCount = 0; }
-
-function setDetect(label, status){
-    const a = el('dino-detect-label'), b = el('dino-detect-state');
-    const la = label || '—', st = status || '';
-    if (a && a.textContent !== la) a.textContent = la; // hanya tulis DOM bila berubah (hemat reflow tiap polling)
-    if (b && b.textContent !== st) b.textContent = st;
-}
-function setTarget(word){
-    const t = el('dino-target');
-    if (t) t.textContent = word || '—';
-    if (word) setFeedback(null);
-}
-function setFeedback(ok, text){
-    const f = el('dino-feedback');
-    if (!f) return;
-    if (ok === null){ f.innerHTML = ''; f.className = 'game-play-question-feedback'; return; }
-    f.innerHTML = (ok ? ICON_CHECK : ICON_CROSS) + ' ' + text;
-    f.className = 'game-play-question-feedback ' + (ok ? 'is-correct' : 'is-wrong');
-}
 
 function commitAnswer(ob, label){
     const now = performance.now();
@@ -1632,7 +1595,6 @@ function commitAnswer(ob, label){
     sfxTyping();
     if (benar){
         ob.answer = 'correct';
-        state.typedIndex = ob.word.length;
         setFeedback(true, 'Benar!');
         // PENTING: diselesaikan LANGSUNG (bukan ditunda) supaya lompatan/serangan
         // selalu terpicu. Jeda sebelumnya membuat rintangan sempat "mentok" ke
@@ -1642,7 +1604,6 @@ function commitAnswer(ob, label){
         resolveObstacle(true);
     } else {
         ob.answer = 'wrong';
-        state.wrongFlashAt = now;
         setFeedback(false, 'Salah (' + label + ')');
         // Serangan udara langsung membalas; rintangan darat menabrak dino saat tiba
         if (ob.type === 'air'){
@@ -1660,8 +1621,8 @@ function pollDetect(){
     if (!lm){
         // Tidak menimpa pesan dengan "Mencari tangan..." di sini — badge
         // status kamera sudah menunjukkan itu, biar tidak dobel/berkedip.
-        needRelease = false; resetAnswerTracking();
-        { const dl = el('dino-detect-label'); if (!dl || !/^[-—–\s]*$/.test(dl.textContent)) setDetect(null, ''); } // kembali "—" hanya jika belum
+        needRelease = false;
+        clearDetect();
         return;
     }
     awaiting = true;
@@ -1672,16 +1633,12 @@ function pollDetect(){
             const label = (data.ok && data.label) ? String(data.label) : null;
             setDetect(label, label ? 'Tangan terdeteksi' : (data.message || 'Belum dikenali'));
             const ob = state.current;
-            if (!ob || ob.resolved || ob.answer){ resetAnswerTracking(); return; }
-            if (!label){ resetAnswerTracking(); return; }
-            const low = label.trim().toLowerCase();
+            if (!ob || ob.resolved || ob.answer || !label) return;
             if (needRelease){
-                if (low === lastAnswerLabel) return; // masih menahan gestur jawaban sebelumnya
+                if (label.trim().toLowerCase() === lastAnswerLabel) return; // masih menahan gestur jawaban sebelumnya
                 needRelease = false;
             }
-            if (low === streakLabel) streakCount++; else { streakLabel = low; streakCount = 1; }
-            const benar = low === ob.word.trim().toLowerCase();
-            if (streakCount >= (benar ? STREAK_CORRECT : STREAK_WRONG)) commitAnswer(ob, label);
+            commitAnswer(ob, label);
         })
         .catch(() => {})
         .finally(() => { awaiting = false; });
@@ -1712,36 +1669,13 @@ function loop(now){
     if (!state || !state.running) return;
     const dt = Math.min(0.05, (now - (state.lastFrameTime || now)) / 1000);
     state.lastFrameTime = now;
-    trySpawn(now);
+    trySpawn();
     updatePhysics(dt, now);
     draw(now);
     warmAhead(dinoWalkFrames, Math.floor(state.walkFrame), 8);
     if (state.current && state.current.model === 'hornet')
         warmAhead(hornetFrames, Math.floor(now / (HORNET_FRAME_DURATION * 1000)) % HORNET_FRAME_COUNT, 8);
     state.rafId = requestAnimationFrame(loop);
-}
-
-// ============================================================
-// KAMERA (dipindah ke layar bermain, sama seperti Apple Snake)
-// ============================================================
-function pindahkanKamera(masuk){
-    const leftCol = document.getElementById('left-col');
-    const slot = el('game-dino-camera-slot');
-    if (!leftCol || !slot) return;
-    if (masuk){
-        window.__astaLeftColParent = window.__astaLeftColParent || leftCol.parentElement;
-        window.__astaLeftColNext = window.__astaLeftColNext || leftCol.nextElementSibling;
-        slot.appendChild(leftCol);
-        leftCol.classList.remove('hidden');
-        leftCol.style.display = '';
-    } else {
-        const parent = window.__astaLeftColParent, next = window.__astaLeftColNext;
-        if (parent){
-            if (next && next.parentElement === parent) parent.insertBefore(leftCol, next);
-            else parent.appendChild(leftCol);
-        }
-        leftCol.classList.add('hidden');
-    }
 }
 
 // ============================================================
@@ -1758,7 +1692,6 @@ function kumpulkanSoal(kategori){
 }
 
 function namaPemain(){ return localStorage.getItem('astakanda_player_nama') || 'Pemain'; }
-const ICON_PERSON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
 let cfgLast = null;
 
@@ -1847,18 +1780,15 @@ async function start(config){
     if (perluLoading) setLoadingProgress(100);
 
     pindahkanKamera(true);
-    const badge = el('dino-player-badge');
-    if (badge) badge.innerHTML = ICON_PERSON + ' ' + namaPemain();
-    setDetect(null, 'Peragakan gestur untuk menjawab');
-    setTarget(null);
+    resetPanel(namaPemain());
 
     const diff = DIFF_CONFIG[cfgLast.kesulitan] ? cfgLast.kesulitan : 'mudah';
     fitCanvas();
     if (state && state.rafId) cancelAnimationFrame(state.rafId);
-    state = freshState(diff, namaPemain(), pool);
+    state = freshState(diff, pool);
     state.startTime = performance.now();
     state.lastFrameTime = state.startTime;
-    needRelease = false; lastAnswerLabel = null; resetAnswerTracking();
+    needRelease = false; lastAnswerLabel = null;
     el('dino-rekor').textContent = rekor;
     rekorPromise.then((v) => { if (gen === startGen) el('dino-rekor').textContent = v; });
     updateHud();

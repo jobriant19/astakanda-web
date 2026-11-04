@@ -85,7 +85,9 @@
     min-width: 0;
   }
   #game-play .game-play-camera-slot { aspect-ratio: auto; height: clamp(120px, 23dvh, 220px); }
-  #game-play .game-play-question    { height: clamp(104px, 16dvh, 150px); }
+  #game-play .game-play-question    { height: clamp(124px, 19dvh, 170px); }
+  #game-play .apple-spoiler { font-size: 10.5px; gap: 4px; }
+  #game-play .apple-spoiler-val { padding: 1px 7px; }
 
   #game-play .game-play-question {
     gap: 6px;
